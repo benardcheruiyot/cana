@@ -1,0 +1,111 @@
+.wrap {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.breadcrumbs {
+  margin: 0 0 0.7rem;
+  color: #666;
+  font-size: 0.88rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.breadcrumbs a {
+  color: #666;
+  text-decoration: none;
+}
+
+.headingBar {
+  margin-bottom: 1rem;
+  border: 1px solid #ededed;
+  background: #fff;
+  padding: 0.7rem 0.9rem;
+}
+
+.headingBar h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 400;
+  color: #111;
+  text-transform: lowercase;
+}
+
+.statusGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+}
+
+.statusCard,
+.methodsCard {
+  border: 1px solid #ececec;
+  background: #fff;
+  padding: 1rem;
+}
+
+.statusCard h2,
+.methodsCard h2 {
+  margin: 0 0 0.55rem;
+  font-size: 1.55rem;
+  line-height: 1.25;
+  font-weight: 600;
+  color: #111;
+}
+
+.statusCard p {
+  margin: 0;
+  color: #444;
+  line-height: 1.55;
+}
+
+.statusCard a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.methodsCard ul {
+  margin: 0;
+  padding-left: 0;
+  display: grid;
+  gap: 0.32rem;
+  list-style: none;
+}
+
+.methodsCard li {
+  color: #444;
+  display: flex;
+  align-items: center;
+  gap: 0.42rem;
+}
+
+.methodIcon {
+  width: 1rem;
+  text-align: center;
+  color: #555;
+  font-weight: 700;
+}
+
+.methodLogo {
+  width: 36px;
+  height: 20px;
+  object-fit: contain;
+  display: inline-block;
+}
+
+@media (max-width: 700px) {
+  .statusGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .headingBar h1 {
+    font-size: 1.65rem;
+  }
+
+  .statusCard h2,
+  .methodsCard h2 {
+    font-size: 1.25rem;
+  }
+}
