@@ -51,37 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.1
-        with:
-          host: ${{ secrets.INTERSERVER_HOST }}
-          username: ${{ secrets.INTERSERVER_USER }}
-          password: ${{ secrets.INTERSERVER_PASSWORD }}
-          script: |
-            set -e
-            export PATH="$PATH:/usr/local/bin"
-            mkdir -p ~/cana
-            cd ~/cana
-            if [ ! -d .git ]; then
-              git clone https://github.com/${{ github.repository }}.git .
-            else
-              git remote set-url origin https://github.com/${{ github.repository }}.git
-              git fetch origin main
-              git checkout main
-              git pull --ff-only origin main
-            fi
-            npm ci
-            cd frontend
-            npm ci
-            npm run build
-            cd ../backend
-            npm ci
-            cat > .env <<'EOF'
-            PORT=4000
-            CORS_ORIGIN=https://greenlinewellnes.shop,https://www.greenlinewellnes.shop
-            APP_DOMAIN=greenlinewellnes.shop
-            EOF
-            npm install -g pm2
-            pm2 delete cana || true
-            pm2 start index.js --name cana --watch false --cwd "$PWD"
-            pm2 save
+      - name: Deployment note
+        run: |
+          echo "Deployment is handled locally via scripts/deploy-server.sh to avoid SSH secret issues."
+          echo "Run: SSH_USER=root SSH_PASSWORD='your-password' ./scripts/deploy-server.sh 153.75.247.188"
