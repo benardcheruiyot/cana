@@ -58,12 +58,18 @@ jobs:
           username: ${{ secrets.INTERSERVER_USER }}
           password: ${{ secrets.INTERSERVER_PASSWORD }}
           script: |
+            set -e
+            export PATH="$PATH:/usr/local/bin"
             mkdir -p ~/cana
             cd ~/cana
             if [ ! -d .git ]; then
               git clone https://github.com/${{ github.repository }}.git .
+            else
+              git remote set-url origin https://github.com/${{ github.repository }}.git
+              git fetch origin main
+              git checkout main
+              git pull --ff-only origin main
             fi
-            git pull origin main
             npm ci
             cd frontend
             npm ci
@@ -71,9 +77,11 @@ jobs:
             cd ../backend
             npm ci
             cat > .env <<'EOF'
-            PORT=3000
+            PORT=4000
             CORS_ORIGIN=https://greenlinewellnes.shop,https://www.greenlinewellnes.shop
             APP_DOMAIN=greenlinewellnes.shop
             EOF
             npm install -g pm2
-            pm2 restart cana || pm2 start index.js --name cana
+            pm2 delete cana || true
+            pm2 start index.js --name cana --watch false --cwd "$PWD"
+            pm2 save
