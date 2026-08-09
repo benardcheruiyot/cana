@@ -1312,6 +1312,9 @@ main {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 1.25rem;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 .status-message {
   padding: 1.5rem;
@@ -2266,6 +2269,10 @@ main {
   }
   .mainContent {
     padding-bottom: 0.9rem;
+  }
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important;
+    gap: 0.7rem !important;
   }
 }
 .archiveToolbar {
