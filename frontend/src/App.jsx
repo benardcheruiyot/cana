@@ -43,6 +43,11 @@ export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const isCheckoutRoute = location.pathname === '/checkout' || location.pathname === '/checkout/';
+  const chatUrl = 'https://wa.me/19408820131?text=Hi%2C%20I%20need%20help%20with%20my%20order';
+
+  const handleOpenChat = () => {
+    window.open(chatUrl, '_blank', 'noopener,noreferrer');
+  };
 
   useEffect(() => {
     search();
@@ -608,22 +613,26 @@ export default function App() {
       {!isCheckoutRoute ? (
         <>
           <div className="joinChatReplica" aria-label="Chat widget">
-            <button type="button" className="joinChatButton" aria-label="Open Chat">
+            <button
+              type="button"
+              className="joinChatButton"
+              aria-label="Open Chat"
+              onClick={handleOpenChat}
+            >
               Open Chat
               <span className="joinChatBadge">Online</span>
             </button>
           </div>
 
           <div className="floatingActions" aria-label="Quick contact actions">
-            <a
+            <button
+              type="button"
               className="chatFab"
-              href="https://wa.me/19408820131?text=Hi%2C%20I%20need%20help%20with%20my%20order"
-              target="_blank"
-              rel="noopener noreferrer"
+              onClick={handleOpenChat}
               aria-label="Open chat support"
             >
               Need help? Chat with us
-            </a>
+            </button>
             <a
               className="whatsAppFab"
               href="https://wa.me/19408820131"
