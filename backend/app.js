@@ -12,7 +12,18 @@ const app = express()
 const frontendDistPath = path.resolve(__dirname, '../frontend/dist')
 const hasFrontendDist = fs.existsSync(frontendDistPath)
 
-app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }))
+const corsOrigins = String(process.env.CORS_ORIGIN || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean)
+
+app.set('trust proxy', true)
+app.use(
+  cors({
+    origin: corsOrigins.length ? corsOrigins : '*',
+    optionsSuccessStatus: 200,
+  })
+)
 app.use(express.json())
 app.use('/images', express.static(path.join(__dirname, 'public/images')))
 app.use('/api/products', productsRouter)
