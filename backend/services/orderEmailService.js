@@ -59,7 +59,7 @@ function escapeHtml(value) {
 
 function formatMoney(cents) {
   const amount = Number(cents) || 0
-  return `KSh${(amount / 100).toFixed(2)}`
+  return `$${(amount / 100).toFixed(2)}`
 }
 
 function formatOrderDate(dateValue) {

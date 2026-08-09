@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import styles from './checkout-page.module.css';
 import { Link } from 'react-router-dom';
 import ImageWithFallback from './ImageWithFallback';
-import { formatKShCents } from '../utils/currency';
+import { formatUsdCents } from '../utils/currency';
 import { PAYMENT_METHODS } from '../constants/payments';
 
 const CHECKOUT_STORAGE_KEY = 'green-rise-checkout-demo-v1';
@@ -497,18 +497,18 @@ export default function CheckoutPage({ cartItems, total, onPlaceOrder, onCancel,
                               </div>
                             </div>
                           </td>
-                          <td>{formatKShCents((item.price_cents || 0) * item.quantity)}</td>
+                          <td>{formatUsdCents((item.price_cents || 0) * item.quantity)}</td>
                         </tr>
                       ))}
                     </tbody>
                     <tfoot>
                       <tr>
                         <th>Subtotal</th>
-                        <td>{formatKShCents(total || 0)}</td>
+                        <td>{formatUsdCents(total || 0)}</td>
                       </tr>
                       <tr>
                         <th>Total</th>
-                        <td className={styles.orderGrandTotal}>{formatKShCents(total || 0)}</td>
+                        <td className={styles.orderGrandTotal}>{formatUsdCents(total || 0)}</td>
                       </tr>
                     </tfoot>
                   </table>

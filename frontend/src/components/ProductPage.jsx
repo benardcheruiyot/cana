@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import styles from './product-page.module.css';
 import { Link } from 'react-router-dom';
 import ImageWithFallback from './ImageWithFallback';
-import { formatRpCents } from '../utils/currency';
+import { formatUsdCents } from '../utils/currency';
 import { toCategoryRoute } from '../constants/categories';
 
 export default function ProductPage({ product, relatedProducts = [], onBack, onAddToCart }) {
@@ -19,7 +19,7 @@ export default function ProductPage({ product, relatedProducts = [], onBack, onA
     remember: false,
   });
   const [reviewSubmitted, setReviewSubmitted] = React.useState(false);
-  const price = formatRpCents(product.price_cents || 0);
+  const price = formatUsdCents(product.price_cents || 0);
   const attributes = product.attributes || {};
   const categories = product.categories || [];
 
@@ -288,7 +288,7 @@ export default function ProductPage({ product, relatedProducts = [], onBack, onA
                   {relatedProduct.title}
                 </Link>
                 <p className={styles.relatedPrice}>
-                  {formatRpCents(relatedProduct.price_cents || 0)}
+                  {formatUsdCents(relatedProduct.price_cents || 0)}
                 </p>
                 <button
                   type="button"

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { formatKShCents } from '../utils/currency';
+import { formatUsdCents } from '../utils/currency';
 import ServiceTrustStrip from '../components/ServiceTrustStrip';
 import { CARD_DECLINED_SUPPORT_PHONE } from '../constants/payments';
 import styles from './order-received-view.module.css';
@@ -55,7 +55,7 @@ export default function OrderReceivedView({ lastOrder }) {
             Date: <strong>{formattedDate}</strong>
           </li>
           <li>
-            Total: <strong>{formatKShCents(order.total_cents || 0)}</strong>
+            Total: <strong>{formatUsdCents(order.total_cents || 0)}</strong>
           </li>
           <li>
             Payment method: <strong>{order.paymentMethod || 'Zelle pay'}</strong>
@@ -83,14 +83,14 @@ export default function OrderReceivedView({ lastOrder }) {
                     <Link to={`/product/${item.id}`}>{item.title}</Link>{' '}
                     <strong>x {item.quantity}</strong>
                   </td>
-                  <td>{formatKShCents((item.price_cents || 0) * (item.quantity || 0))}</td>
+                  <td>{formatUsdCents((item.price_cents || 0) * (item.quantity || 0))}</td>
                 </tr>
               ))}
             </tbody>
             <tfoot>
               <tr>
                 <th>Subtotal:</th>
-                <td>{formatKShCents(order.total_cents || 0)}</td>
+                <td>{formatUsdCents(order.total_cents || 0)}</td>
               </tr>
               <tr>
                 <th>Payment method:</th>
@@ -99,7 +99,7 @@ export default function OrderReceivedView({ lastOrder }) {
               <tr>
                 <th>Total:</th>
                 <td>
-                  <strong>{formatKShCents(order.total_cents || 0)}</strong>
+                  <strong>{formatUsdCents(order.total_cents || 0)}</strong>
                 </td>
               </tr>
             </tfoot>

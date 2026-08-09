@@ -9,10 +9,14 @@ export function formatCents(value, currencyPrefix) {
   return `${currencyPrefix}${(cents / 100).toFixed(2)}`;
 }
 
+export function formatUsdCents(value) {
+  return formatCents(value, '$');
+}
+
 export function formatKShCents(value) {
-  return formatCents(value, 'KSh');
+  return formatUsdCents(value);
 }
 
 export function formatRpCents(value) {
-  return formatCents(value, 'Rp');
+  return formatUsdCents(value);
 }

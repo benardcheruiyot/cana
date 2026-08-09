@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import styles from './cart-summary.module.css';
 import { Link } from 'react-router-dom';
 import ImageWithFallback from './ImageWithFallback';
-import { formatKShCents } from '../utils/currency';
+import { formatUsdCents } from '../utils/currency';
 
 export default function CartSummary({
   cartItems,
@@ -76,7 +76,7 @@ export default function CartSummary({
                   )}
                 </td>
                 <td className={styles.itemTitle}>{item.title}</td>
-                <td>{formatKShCents(item.price_cents || 0)}</td>
+                <td>{formatUsdCents(item.price_cents || 0)}</td>
                 <td>
                   <div className={styles.quantityControls}>
                     <button
@@ -98,7 +98,7 @@ export default function CartSummary({
                     </button>
                   </div>
                 </td>
-                <td>{formatKShCents((item.price_cents || 0) * item.quantity)}</td>
+                <td>{formatUsdCents((item.price_cents || 0) * item.quantity)}</td>
               </tr>
             ))}
             <tr>
@@ -122,11 +122,11 @@ export default function CartSummary({
         <h4>Cart totals</h4>
         <div className={styles.totalRow}>
           <span>Subtotal</span>
-          <span>{formatKShCents(total || 0)}</span>
+          <span>{formatUsdCents(total || 0)}</span>
         </div>
         <div className={styles.totalRow}>
           <span>Total</span>
-          <strong>{formatKShCents(total || 0)}</strong>
+          <strong>{formatUsdCents(total || 0)}</strong>
         </div>
         <button type="button" className={styles.checkoutButton} onClick={onCheckout} disabled={isPlacingOrder}>
           {isPlacingOrder ? 'Processing order...' : 'Proceed to checkout'}

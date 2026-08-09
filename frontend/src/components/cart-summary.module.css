@@ -55,14 +55,15 @@
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  min-width: 640px;
   font-size: 0.92rem;
   color: #3b3b3b;
+  min-width: 0;
 }
 
 .cartTable th,
 .cartTable td {
   border: 0;
+  min-width: 0;
   border-bottom: 1px solid #ececec;
   padding: 0.85rem 0.25rem;
   text-align: left;

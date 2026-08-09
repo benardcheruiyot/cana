@@ -17,6 +17,7 @@ html,
 body {
   margin: 0;
   padding: 0;
+  min-width: 0;
   background: var(--bg);
   color: var(--text);
   font-family:
@@ -27,6 +28,21 @@ body {
     sans-serif;
   font-size: 16px;
   line-height: 1.5;
+}
+
+img,
+svg,
+video,
+iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+button,
+input,
+select,
+textarea {
+  min-width: 0;
 }
 /* Skip links for keyboard users */
 .skip-link {
@@ -1077,6 +1093,65 @@ button:hover {
 }
 .middlePromoSpacer {
   min-height: 1px;
+}
+
+@media (max-width: 980px) {
+  .hero {
+    padding: 1.1rem 1rem 1.2rem;
+  }
+
+  .heroActions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .heroActions button {
+    width: 100%;
+    max-width: none;
+  }
+
+  .sectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.9rem;
+  }
+
+  .sectionHeader p {
+    max-width: 100%;
+  }
+
+  .featureSection,
+  .middlePromoSection,
+  .missionSection {
+    grid-template-columns: 1fr;
+  }
+
+  .featureImage,
+  .missionImage,
+  .middlePromoImage {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 700px) {
+  .hero {
+    padding: 0.85rem 0.95rem 1rem;
+  }
+
+  .heroGraphic {
+    min-height: 220px;
+    padding: 1rem;
+  }
+
+  .heroGraphicCard {
+    width: 100%;
+  }
+
+  .heroActions button {
+    width: 100%;
+    max-width: none;
+  }
 }
 .supportReplica {
   margin-top: 1.5rem;

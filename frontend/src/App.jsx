@@ -16,7 +16,7 @@ import {
   getPaymentMethodLabel,
 } from './constants/payments';
 import { createOrder, getImageUrl } from './api';
-import { formatKShCents } from './utils/currency';
+import { formatUsdCents } from './utils/currency';
 
 const BRAND_LOGO_SRC = 'https://www.greenstoneretail.shop/wp-content/uploads/2026/05/rise.png';
 const CART_STORAGE_KEY = 'green-rise-cart-v1';
@@ -213,7 +213,7 @@ export default function App() {
       });
       const count = response.order?.item_count ?? cartCount;
       const totalCents = response.order?.total_cents ?? cartTotal;
-      const formatted = formatKShCents(totalCents);
+      const formatted = formatUsdCents(totalCents);
       const name = `${customer.firstName || ''} ${customer.lastName || ''}`.trim() || 'Customer';
       const orderNumber = response.order?.orderNumber || 'GR';
       const createdAt = response.order?.createdAt || new Date().toISOString();
@@ -411,12 +411,12 @@ export default function App() {
                         <li key={item.id}>
                           <span>{item.title}</span>
                           <span>
-                            {item.quantity} x {formatKShCents(item.price_cents || 0)}
+                            {item.quantity} x {formatUsdCents(item.price_cents || 0)}
                           </span>
                         </li>
                       ))}
                     </ul>
-                    <p className="cartPreviewTotal">Total: {formatKShCents(cartTotal)}</p>
+                    <p className="cartPreviewTotal">Total: {formatUsdCents(cartTotal)}</p>
                     <div className="cartPreviewActions">
                       <Link to="/cart" className="cartPreviewLink">
                         View cart

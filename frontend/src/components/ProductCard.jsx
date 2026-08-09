@@ -2,11 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import styles from './product-card.module.css';
 import ImageWithFallback from './ImageWithFallback';
-import { formatRpCents } from '../utils/currency';
+import { formatUsdCents } from '../utils/currency';
 
 export default function ProductCard({ product, onSelect, onAddToCart }) {
   const [isAdding, setIsAdding] = React.useState(false);
-  const price = formatRpCents(product.price_cents || 0);
+  const price = formatUsdCents(product.price_cents || 0);
   const categoryText = (product.categories || []).slice(0, 3).join(', ');
 
   function handleAddToCart(event) {
