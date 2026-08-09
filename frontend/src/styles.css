@@ -786,7 +786,7 @@ button:hover {
   max-width: 1280px;
   width: min(100%, 1280px);
   margin: 0 auto;
-  padding: 1.25rem 1.5rem 2rem;
+  padding: 1.25rem 1.5rem 1.25rem;
 }
 .hero {
   display: grid;
