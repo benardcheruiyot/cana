@@ -6,7 +6,7 @@ services:
     region: oregon
     rootDir: .
     buildCommand: npm install && npm run build && cd backend && npm install
-    startCommand: npm start
+    startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
         value: production

@@ -9,7 +9,7 @@ const { eventsLogPath } = require('./services/logger')
 const { notFoundHandler, errorHandler } = require('./middleware/errorHandler')
 
 const app = express()
-const frontendDistPath = path.join(__dirname, '../frontend/dist')
+const frontendDistPath = path.resolve(__dirname, '../frontend/dist')
 const hasFrontendDist = fs.existsSync(frontendDistPath)
 
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }))
@@ -35,7 +35,7 @@ app.get('/api/logs/events', (req, res) => {
 })
 
 if (hasFrontendDist) {
-  app.use(express.static(frontendDistPath))
+  app.use(express.static(frontendDistPath, { extensions: ['html'] }))
   app.get('*', (req, res) => {
     res.sendFile(path.join(frontendDistPath, 'index.html'))
   })
