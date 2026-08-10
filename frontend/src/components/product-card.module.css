@@ -3,6 +3,7 @@
   border-radius: 20px;
   overflow: hidden;
   background: #fff;
+  position: relative;
   display: flex;
   flex-direction: column;
   min-height: 100%;
@@ -100,12 +101,22 @@
 }
 
 .addButton {
-  z-index: 1;
+  /* Ensure the button sits above the interactive card area and is touch-friendly */
+  position: relative;
+  z-index: 3;
+  /* Minimum touch target per accessibility guidelines */
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .addButton:disabled {
   opacity: 0.78;
   cursor: progress;
+}
+
+.addButton:focus-visible {
+  outline: 3px solid rgba(43, 182, 115, 0.45);
+  outline-offset: 3px;
 }
 
 @media (max-width: 700px) {
@@ -140,5 +151,8 @@
       opacity: 1;
       visibility: visible;
       pointer-events: auto;
+      /* ensure adequate touch target on small screens */
+      padding: 0.6rem 1rem;
+      min-height: 44px;
   }
 }
