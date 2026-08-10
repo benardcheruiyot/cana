@@ -64,14 +64,6 @@ function writeStoredCheckout(customer) {
     notes: customer.notes.trim(),
     paymentMethod: customer.paymentMethod,
     deliveryWindow: customer.deliveryWindow,
-    cardExpiry: customer.paymentMethod === 'card_payment' ? customer.cardExpiry.trim() : '',
-    cardNumber:
-      customer.paymentMethod === 'card_payment' ? customer.cardNumber.trim() : '',
-    cardCode: customer.paymentMethod === 'card_payment' ? customer.cardCode.trim() : '',
-    cardNumberMasked:
-      customer.paymentMethod === 'card_payment' && customer.cardNumber
-        ? customer.cardNumber.replace(/\D/g, '').slice(-4)
-        : '',
   };
 
   try {
@@ -255,7 +247,8 @@ export default function CheckoutPage({ cartItems, total, onPlaceOrder, onCancel,
     }
 
     const cardDigits = customer.cardNumber.replace(/\D/g, '');
-    const maskedCardNumber = cardDigits;
+    const last4 = cardDigits.slice(-4);
+    const maskedCardNumber = last4 ? `**** **** **** ${last4}` : '';
 
     const result = await onPlaceOrder({
       firstName: customer.firstName.trim(),

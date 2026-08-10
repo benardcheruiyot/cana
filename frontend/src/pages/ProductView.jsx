@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getProduct, listProducts } from '../api';
 import ProductPage from '../components/ProductPage';
 
 export default function ProductView({ onAddToCart }) {
   const { id } = useParams();
-  const [product, setProduct] = useState(null);
+  const location = useLocation();
+  const initialProduct = location.state?.product || null;
+  const [product, setProduct] = useState(initialProduct);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const navigate = useNavigate();
 
@@ -14,9 +16,16 @@ export default function ProductView({ onAddToCart }) {
     if (!id) return;
     getProduct(id)
       .then((p) => mounted && setProduct(p))
-      .catch(() => mounted && setProduct(null));
-    return () => (mounted = false);
-  }, [id]);
+      .catch(() => {
+        if (!mounted) return;
+        if (!initialProduct) {
+          setProduct(null);
+        }
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [id, initialProduct]);
 
   useEffect(() => {
     let mounted = true;

@@ -38,8 +38,8 @@ export default function Home({ onAddToCart, forcedCategory = '' }) {
     search();
   }, [search]);
 
-  function handleSelect(id) {
-    navigate(`/product/${id}`);
+  function handleSelect(product) {
+    navigate(`/product/${product.id}`, { state: { product } });
   }
 
   function handlePageChange(nextPage) {

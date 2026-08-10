@@ -10,7 +10,7 @@ export default function ProductList({ products, onSelect, onAddToCart }) {
         <ProductCard
           key={product.id}
           product={product}
-          onSelect={() => onSelect(product.id)}
+          onSelect={() => onSelect(product)}
           onAddToCart={() => onAddToCart(product)}
         />
       ))}
