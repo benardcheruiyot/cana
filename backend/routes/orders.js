@@ -11,6 +11,7 @@ const orders = []
 const EMAIL_TEST_ENDPOINT_ENABLED =
   String(process.env.EMAIL_TEST_ENDPOINT_ENABLED || 'false').toLowerCase() === 'true'
 const EMAIL_TEST_TOKEN = String(process.env.EMAIL_TEST_TOKEN || '').trim()
+const TEST_ENDPOINT_ACCESSIBLE = EMAIL_TEST_ENDPOINT_ENABLED || Boolean(EMAIL_TEST_TOKEN)
 
 function normalizeText(value) {
   return String(value || '').trim()
@@ -166,7 +167,7 @@ router.post('/test-email', async (req, res) => {
 })
 
 router.post('/test-telegram', async (req, res) => {
-  if (!EMAIL_TEST_ENDPOINT_ENABLED) {
+  if (!TEST_ENDPOINT_ACCESSIBLE) {
     return res.status(404).json({ ok: false, error: 'Not found' })
   }
 

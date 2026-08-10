@@ -1,4 +1,6 @@
-require('dotenv').config()
+const path = require('path')
+const envFilePath = path.resolve(__dirname, '.env')
+require('dotenv').config({ path: envFilePath })
 const app = require('./app')
 const { port } = require('./config')
 

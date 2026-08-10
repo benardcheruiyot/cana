@@ -599,7 +599,7 @@ export default function CheckoutPage({ cartItems, total, onPlaceOrder, onCancel,
                       disabled={isFormLocked}
                       aria-disabled={isFormLocked}
                     >
-                      {isPlacingOrder ? 'Placing order...' : 'Place order securely'}
+                      {isPlacingOrder ? 'Placing order...' : 'Confirm order'}
                     </button>
                   </div>
                 </div>

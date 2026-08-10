@@ -22,7 +22,7 @@ export default function PaymentStatusView() {
         </nav>
 
         <div className={styles.headingBar}>
-          <h1>payment status</h1>
+          <h1>Card payment declined</h1>
         </div>
 
         <div className={styles.statusGrid}>

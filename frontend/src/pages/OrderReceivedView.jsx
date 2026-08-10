@@ -45,7 +45,7 @@ export default function OrderReceivedView({ lastOrder }) {
   return (
     <div className="mainContent">
       <section className={styles.wrap}>
-        <p className={styles.received}>Thank you. Your order has been received.</p>
+        <h1 className={styles.received}>Thank you — your order is confirmed</h1>
 
         <ul className={styles.metaList}>
           <li>
