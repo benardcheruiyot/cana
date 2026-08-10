@@ -184,8 +184,8 @@ export default function Home({ onAddToCart, forcedCategory = '' }) {
                 Browse Flowers
               </button>
             </div>
-            <a href="tel:+19408820131" className="heroCall">
-              Call/Text: +1 (940) 882-0131
+            <a href="tel:+12513379407" className="heroCall">
+              Call/Text: +1 (251) 337-9407
             </a>
           </div>
 
