@@ -20,12 +20,21 @@ export default function ProductCard({ product, onSelect, onAddToCart }) {
     }, 320);
   }
 
+  function handleCardKeyDown(event) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onSelect();
+    }
+  }
+
   return (
     <article className={styles.card}>
-      <button
-        type="button"
+      <div
         className={styles.cardButton}
+        role="button"
+        tabIndex={0}
         onClick={onSelect}
+        onKeyDown={handleCardKeyDown}
         aria-label={`View ${product.title}`}
       >
         <div className={styles.media}>
@@ -42,7 +51,7 @@ export default function ProductCard({ product, onSelect, onAddToCart }) {
             <p className={styles.price}>{price}</p>
           </div>
         </div>
-      </button>
+      </div>
       <button
         type="button"
         className={styles.addButton}
