@@ -20,7 +20,11 @@ if [ -z "${SSH_USER:-}" ] || [ -z "${SSH_HOST:-}" ] || [ -z "${TARGET_DIR:-}" ];
   exit 1
 fi
 echo "Uploading build to ${SSH_USER}@${SSH_HOST}:${TARGET_DIR} (this will delete remote files not present locally)..."
-rsync -avz --delete --exclude 'node_modules' --chmod=Du=rwx,Fu=rw -e "ssh" "$BUILD_DIR/" "${SSH_USER}@${SSH_HOST}:${TARGET_DIR}/"
+RSYNC_SSH_OPTS="-o StrictHostKeyChecking=no"
+if [ -n "${SSH_KEY_PATH:-}" ]; then
+  RSYNC_SSH_OPTS="$RSYNC_SSH_OPTS -i \"${SSH_KEY_PATH}\""
+fi
+rsync -avz --delete --exclude 'node_modules' --chmod=Du=rwx,Fu=rw -e "ssh $RSYNC_SSH_OPTS" "$BUILD_DIR/" "${SSH_USER}@${SSH_HOST}:${TARGET_DIR}/"
 
 if ssh "${SSH_USER}@${SSH_HOST}" 'command -v systemctl >/dev/null 2>&1'; then
   echo "Reloading nginx on remote host (if available)..."
