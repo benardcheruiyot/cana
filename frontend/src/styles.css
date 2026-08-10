@@ -1394,6 +1394,65 @@ main {
   border-color: #fecaca;
   background: #fff1f2;
 }
+
+.loading-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.skeleton-card {
+  border: 1px solid rgba(34, 83, 45, 0.08);
+  border-radius: 20px;
+  background: #fff;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 360px;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+}
+
+.skeleton-media {
+  flex: 1;
+  background: linear-gradient(90deg, #f0f2f4 0%, #e7eaee 50%, #f0f2f4 100%);
+  background-size: 200% 100%;
+  animation: skeletonPulse 1.2s ease-in-out infinite;
+}
+
+.skeleton-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.skeleton-line {
+  height: 16px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f0f2f4 0%, #e7eaee 50%, #f0f2f4 100%);
+  background-size: 200% 100%;
+  animation: skeletonPulse 1.2s ease-in-out infinite;
+}
+
+.skeleton-line-short {
+  width: 40%;
+}
+
+.skeleton-button {
+  width: 60%;
+  height: 42px;
+}
+
+@keyframes skeletonPulse {
+  0%,
+  100% {
+    background-position: 200% 0;
+  }
+  50% {
+    background-position: -200% 0;
+  }
+}
+
 .archiveMeta {
   color: #4f5f52;
   font-size: 0.93rem;
