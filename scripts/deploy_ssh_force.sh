@@ -4,6 +4,8 @@
 #   export SSH_USER=ubuntu
 #   export SSH_HOST=example.com
 #   export TARGET_DIR=/var/www/greenline
+#   export SSH_KEY_PATH=~/.ssh/id_rsa
+#   export SSH_PRIVATE_KEY_PATH=~/.ssh/id_rsa
 #   export CLOUDFLARE_ZONE_ID=...
 #   export CLOUDFLARE_API_TOKEN=...
 #   ./scripts/deploy_ssh_force.sh
@@ -19,10 +21,18 @@ if [ -z "${SSH_USER:-}" ] || [ -z "${SSH_HOST:-}" ] || [ -z "${TARGET_DIR:-}" ];
   echo "Example: SSH_USER=ubuntu SSH_HOST=example.com TARGET_DIR=/var/www/site ./scripts/deploy_ssh_force.sh"
   exit 1
 fi
+SSH_KEY_FILE="${SSH_KEY_PATH:-${SSH_PRIVATE_KEY_PATH:-}}"
+if [ -n "${SSH_PRIVATE_KEY_PATH:-}" ] && [ -z "${SSH_KEY_PATH:-}" ]; then
+  SSH_KEY_FILE="$SSH_PRIVATE_KEY_PATH"
+fi
+if [ -n "${SSH_KEY_FILE:-}" ]; then
+  echo "Using SSH key file: $SSH_KEY_FILE"
+fi
+
 echo "Uploading build to ${SSH_USER}@${SSH_HOST}:${TARGET_DIR} (this will delete remote files not present locally)..."
 RSYNC_SSH_OPTS="-o StrictHostKeyChecking=no"
-if [ -n "${SSH_KEY_PATH:-}" ]; then
-  RSYNC_SSH_OPTS="$RSYNC_SSH_OPTS -i \"${SSH_KEY_PATH}\""
+if [ -n "${SSH_KEY_FILE:-}" ]; then
+  RSYNC_SSH_OPTS="$RSYNC_SSH_OPTS -i \"${SSH_KEY_FILE}\""
 fi
 rsync -avz --delete --exclude 'node_modules' --chmod=Du=rwx,Fu=rw -e "ssh $RSYNC_SSH_OPTS" "$BUILD_DIR/" "${SSH_USER}@${SSH_HOST}:${TARGET_DIR}/"
 

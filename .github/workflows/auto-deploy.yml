@@ -26,6 +26,26 @@ jobs:
         run: |
           npm run build --silent
 
+      - name: Validate required deploy secrets
+        run: |
+          required=(SSH_PRIVATE_KEY SSH_USER SSH_HOST TARGET_DIR PROD_HOST)
+          missing=()
+          for var in "${required[@]}"; do
+            if [ -z "${!var:-}" ]; then
+              missing+=("$var")
+            fi
+          done
+          if [ "${#missing[@]}" -ne 0 ]; then
+            echo "Missing required secrets: ${missing[*]}"
+            exit 1
+          fi
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          TARGET_DIR: ${{ secrets.TARGET_DIR }}
+          PROD_HOST: ${{ secrets.PROD_HOST }}
+
       - name: Prepare SSH
         uses: webfactory/ssh-agent@v0.8.1
         with:
@@ -53,12 +73,14 @@ jobs:
 
       - name: Download production bundle and compute SHA
         run: |
-          # user may need to update PROD_ASSET_URL if your site uses a different filename
-          PROD_URL="https://${{ secrets.PROD_HOST }}/assets/$(basename ${{ env.LOCAL_JS_FILE }})"
+          PROD_URL="https://${PROD_HOST}/assets/$(basename ${LOCAL_JS_FILE})"
           echo "Attempting to download $PROD_URL"
           curl -sfL "$PROD_URL" -o prod_asset.js || true
           if [ -f prod_asset.js ]; then sha256sum prod_asset.js | awk '{print $1}' > prod_sha.txt; else echo 'MISSING' > prod_sha.txt; fi
           echo "PROD SHA:"; cat prod_sha.txt
+        env:
+          PROD_HOST: ${{ secrets.PROD_HOST }}
+          LOCAL_JS_FILE: ${{ env.LOCAL_JS_FILE }}
 
       - name: Compare SHAs
         run: |
