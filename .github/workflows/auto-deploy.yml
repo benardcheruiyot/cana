@@ -29,32 +29,55 @@ jobs:
 
       - name: Validate required deploy secrets
         run: |
-          required=(SSH_PRIVATE_KEY SSH_USER SSH_HOST TARGET_DIR PROD_HOST)
           missing=()
-          for var in "${required[@]}"; do
-            if [ -z "${!var:-}" ]; then
-              missing+=("$var")
+          if [ -z "${PROD_HOST:-}" ]; then
+            missing+=("PROD_HOST")
+          fi
+          if [ -z "${SSH_PRIVATE_KEY:-}" ]; then
+            if [ -z "${INTERSERVER_HOST:-}" ] || [ -z "${INTERSERVER_USER:-}" ] || [ -z "${INTERSERVER_PASSWORD:-}" ]; then
+              missing+=("SSH_PRIVATE_KEY or INTERSERVER_HOST/INTERSERVER_USER/INTERSERVER_PASSWORD")
             fi
-          done
+          fi
           if [ "${#missing[@]}" -ne 0 ]; then
             echo "Missing required secrets: ${missing[*]}"
             exit 1
           fi
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          TARGET_DIR: ${{ secrets.TARGET_DIR }}
+          INTERSERVER_HOST: ${{ secrets.INTERSERVER_HOST }}
+          INTERSERVER_USER: ${{ secrets.INTERSERVER_USER }}
+          INTERSERVER_PASSWORD: ${{ secrets.INTERSERVER_PASSWORD }}
           PROD_HOST: ${{ secrets.PROD_HOST }}
 
-      - name: Prepare SSH
+      - name: Prepare SSH key deploy
+        if: ${{ secrets.SSH_PRIVATE_KEY }}
         uses: webfactory/ssh-agent@v0.8.1
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Deploy dist via rsync
+        if: ${{ secrets.SSH_PRIVATE_KEY && secrets.SSH_USER && secrets.SSH_HOST && secrets.TARGET_DIR }}
         run: |
           rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" frontend/dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.TARGET_DIR }}
+
+      - name: Install sshpass for InterServer deployment
+        if: ${{ secrets.INTERSERVER_PASSWORD && secrets.INTERSERVER_HOST && secrets.INTERSERVER_USER }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+
+      - name: Deploy via deploy-server.sh
+        if: ${{ secrets.INTERSERVER_PASSWORD && secrets.INTERSERVER_HOST && secrets.INTERSERVER_USER }}
+        run: |
+          chmod +x ./scripts/deploy-server.sh
+          export SSH_USER="${INTERSERVER_USER}"
+          export SSH_PASSWORD="${INTERSERVER_PASSWORD}"
+          export DEPLOY_ENV_FILE="backend/.env"
+          ./scripts/deploy-server.sh "${INTERSERVER_HOST}"
+        env:
+          INTERSERVER_HOST: ${{ secrets.INTERSERVER_HOST }}
+          INTERSERVER_USER: ${{ secrets.INTERSERVER_USER }}
+          INTERSERVER_PASSWORD: ${{ secrets.INTERSERVER_PASSWORD }}
 
       - name: Generate backend env file (optional)
         if: ${{ secrets.BACKEND_TARGET_DIR && secrets.SMTP_USER && secrets.SMTP_PASS && secrets.APP_DOMAIN }}

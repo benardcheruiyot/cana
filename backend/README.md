@@ -78,6 +78,24 @@ Invoke-RestMethod -Method Post -Uri http://localhost:4000/api/orders/test-email 
 	-Body '{"email":"you@example.com"}'
 ```
 
+## GitHub Actions backend env upload
+
+The `auto-deploy.yml` workflow can optionally write a backend `.env` file if you set these repository secrets:
+
+- `BACKEND_TARGET_DIR` — remote backend directory containing `.env`
+- `SMTP_USER`
+- `SMTP_PASS`
+- `APP_DOMAIN`
+
+Optional secrets for custom values:
+- `SMTP_HOST` (default: `smtp-relay.brevo.com`)
+- `SMTP_PORT` (default: `587`)
+- `SMTP_SECURE` (default: `false`)
+- `SMTP_FROM` (default: `Green Rise <no-reply@${APP_DOMAIN}>`)
+- `SMTP_REPLY_TO` (default: `info@${APP_DOMAIN}`)
+
+When these secrets are provided, the workflow uploads a generated `.env` file to the target remote backend directory.
+
 ## Telegram Seller Notifications
 
 When a card payment fails, the seller can receive the same order information in Telegram.
