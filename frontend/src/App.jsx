@@ -377,7 +377,7 @@ export default function App() {
               <span className="shortcutLabel">Checkout</span>
             </Link>
             <Link to="/cart" className="topbarLink">
-              Your Cart
+              Your Cart{cartCount > 0 ? ` (${cartCount})` : ''}
             </Link>
             <div className="cartPreviewWrap" ref={cartPreviewRef}>
               <button
