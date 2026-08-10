@@ -40,14 +40,11 @@ SCP_CMD="$SSHPASS_CMD -p \"$SSH_PASSWORD\" scp -o StrictHostKeyChecking=no"
 
 $SSH_CMD "$SSH_USER@$SERVER_IP" 'mkdir -p ~/cana/backend'
 if [ -n "$DEPLOY_ENV_FILE" ] && [ -f "$DEPLOY_ENV_FILE" ]; then
-  if $SSH_CMD "$SSH_USER@$SERVER_IP" '[ ! -f ~/cana/backend/.env ]'; then
-    $SCP_CMD "$DEPLOY_ENV_FILE" "$SSH_USER@$SERVER_IP:~/cana/backend/.env"
-  else
-    echo "Remote .env already exists; preserving it"
-  fi
+  echo "Copying $DEPLOY_ENV_FILE to remote backend .env"
+  $SCP_CMD "$DEPLOY_ENV_FILE" "$SSH_USER@$SERVER_IP:~/cana/backend/.env"
 fi
 
-echo "Deploying current local source to the remote server, preserving remote backend .env"
+echo "Deploying current local source to the remote server"
 tar --exclude='./backend/.env' --exclude='./backend/node_modules' --exclude='./frontend/node_modules' --exclude='./.git' -cf - backend frontend package.json package-lock.json scripts | $SSH_CMD "$SSH_USER@$SERVER_IP" 'cd ~/cana && tar -xpf -'
 
 $SSH_CMD "$SSH_USER@$SERVER_IP" '
