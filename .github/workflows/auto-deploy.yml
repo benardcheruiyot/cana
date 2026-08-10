@@ -1,0 +1,75 @@
+name: Build & Auto Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: |
+          npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm run build --silent
+
+      - name: Prepare SSH
+        uses: webfactory/ssh-agent@v0.8.1
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy dist via rsync
+        run: |
+          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" frontend/dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.TARGET_DIR }}
+
+      - name: Purge Cloudflare (optional)
+        if: ${{ secrets.CLOUDFLARE_API_TOKEN && secrets.CLOUDFLARE_ZONE_ID }}
+        run: |
+          curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}' | jq '.' || true
+
+      - name: Compute local bundle SHA
+        run: |
+          ls -lah frontend/dist/assets
+          file=$(ls frontend/dist/assets/index-*.js | head -n1)
+          echo "LOCAL_JS_FILE=$file" >> $GITHUB_ENV
+          sha256sum "$file" | awk '{print $1}' > local_sha.txt
+          cat local_sha.txt
+
+      - name: Download production bundle and compute SHA
+        run: |
+          # user may need to update PROD_ASSET_URL if your site uses a different filename
+          PROD_URL="https://${{ secrets.PROD_HOST }}/assets/$(basename ${{ env.LOCAL_JS_FILE }})"
+          echo "Attempting to download $PROD_URL"
+          curl -sfL "$PROD_URL" -o prod_asset.js || true
+          if [ -f prod_asset.js ]; then sha256sum prod_asset.js | awk '{print $1}' > prod_sha.txt; else echo 'MISSING' > prod_sha.txt; fi
+          echo "PROD SHA:"; cat prod_sha.txt
+
+      - name: Compare SHAs
+        run: |
+          echo "Local:"; cat local_sha.txt || true
+          echo "Prod:"; cat prod_sha.txt || true
+          if [ -f prod_sha.txt ] && [ "$(cat prod_sha.txt)" = "$(cat local_sha.txt)" ]; then echo "SHA_MATCH=true" >> $GITHUB_ENV; else echo "SHA_MATCH=false" >> $GITHUB_ENV; fi
+
+      - name: Upload verification artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-verification
+          path: |
+            local_sha.txt
+            prod_sha.txt
