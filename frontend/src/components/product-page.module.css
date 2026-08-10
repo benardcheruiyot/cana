@@ -127,6 +127,75 @@
   margin: 0;
 }
 
+.skeletonLine,
+.skeletonTitle,
+.skeletonText,
+.skeletonTextShort,
+.skeletonButton,
+.skeletonImage {
+  display: block;
+  background: linear-gradient(90deg, #f0f2f4 0%, #e7eaee 50%, #f0f2f4 100%);
+  background-size: 200% 100%;
+  animation: skeletonPulse 1.2s ease-in-out infinite;
+}
+
+.skeletonLine {
+  width: 40%;
+  height: 14px;
+  border-radius: 999px;
+  margin-bottom: 0.5rem;
+}
+
+.skeletonTitle {
+  width: 80%;
+  height: 36px;
+  border-radius: 12px;
+}
+
+.skeletonText {
+  width: 100%;
+  height: 18px;
+  border-radius: 10px;
+}
+
+.skeletonTextShort {
+  width: 65%;
+  height: 18px;
+  border-radius: 10px;
+}
+
+.skeletonButton {
+  width: 180px;
+  height: 48px;
+  border-radius: 999px;
+  margin-top: 1rem;
+}
+
+.skeletonImage {
+  width: 100%;
+  min-height: 360px;
+  border-radius: 0;
+}
+
+.skeletonError {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #f5c2c7;
+  background: #fff1f2;
+  color: #842029;
+  border-radius: 12px;
+}
+
+@keyframes skeletonPulse {
+  0%,
+  100% {
+    background-position: 200% 0;
+  }
+  50% {
+    background-position: -200% 0;
+  }
+}
+
 .description {
   color: #444;
   line-height: 1.6;
