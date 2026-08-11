@@ -616,11 +616,11 @@ export default function App() {
             <button
               type="button"
               className="joinChatButton"
-              aria-label="Open WhatsApp chat support"
-              title="Open WhatsApp chat support"
+              aria-label="Message Johnson on WhatsApp"
+              title="Message Johnson on WhatsApp"
               onClick={openSupportChat}
             >
-              Open Chat
+              Message Johnson on WhatsApp
               <span className="joinChatBadge">Online</span>
             </button>
           </div>
@@ -631,16 +631,16 @@ export default function App() {
               href={SUPPORT_CHAT_URL}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Open chat support"
+              aria-label="Message Johnson on WhatsApp"
             >
-              Need help? Chat with us
+              Message Johnson on WhatsApp
             </a>
             <a
               className="whatsAppFab"
               href="https://wa.me/12513379407"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Open WhatsApp"
+              aria-label="Message Johnson on WhatsApp"
             >
               <span className="whatsAppIcon" aria-hidden="true">
                 <svg viewBox="0 0 32 32" focusable="false" aria-hidden="true">
