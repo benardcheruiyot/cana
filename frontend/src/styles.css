@@ -1278,13 +1278,14 @@ button[disabled] {
   line-height: 1;
 }
 .trustStrip {
-  padding: 1rem;
+  padding: 1.25rem;
   border: 1px solid rgba(34, 83, 45, 0.08);
   border-radius: 16px;
   background: #f7fbf3;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 0.9rem;
+  width: 100%;
 }
 .trustStrip .trustCard {
   background: #f7fbf3;

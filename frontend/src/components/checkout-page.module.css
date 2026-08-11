@@ -1,6 +1,7 @@
 .checkoutPage {
-  padding: 0;
+  padding: 1.25rem;
   background: transparent;
+  width: 100%;
 }
 
 .headerRow {
@@ -51,6 +52,7 @@
   grid-template-columns: minmax(0, 1fr) minmax(410px, 40.5%);
   gap: normal;
   align-items: start;
+  width: 100%;
 }
 
 .addressColumn,
@@ -390,7 +392,7 @@
 .emptyCheckout {
   border: 1px solid #e5e7eb;
   background: #fff;
-  padding: 1rem;
+  padding: 0;
   display: grid;
   gap: 0.8rem;
 }
