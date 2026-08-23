@@ -55,7 +55,7 @@ if [ -n "$DEPLOY_ENV_FILE" ] && [ -f "$DEPLOY_ENV_FILE" ]; then
 fi
 
 echo "Deploying current local source to the remote server"
-tar --exclude='./backend/.env' --exclude='./backend/node_modules' --exclude='./frontend/node_modules' --exclude='./.git' -cf - backend frontend package.json package-lock.json scripts | $SSH_CMD "$SSH_USER@$SERVER_IP" "cd '$REMOTE_APP_DIR' && tar -xpf -"
+tar --exclude='./backend/.env' --exclude='./backend/node_modules' --exclude='./frontend/node_modules' --exclude='./.git' -cf - backend frontend package.json package-lock.json scripts cana-optimized.conf | $SSH_CMD "$SSH_USER@$SERVER_IP" "cd '$REMOTE_APP_DIR' && tar -xpf -"
 
 $SSH_CMD "$SSH_USER@$SERVER_IP" "
   set -e
@@ -73,6 +73,18 @@ $SSH_CMD "$SSH_USER@$SERVER_IP" "
   npm install -g pm2
   pm2 startOrRestart ecosystem.config.js --only '$APP_NAME' --update-env
   pm2 save
+  if command -v nginx >/dev/null 2>&1; then
+    install -m 0644 cana-optimized.conf /etc/nginx/sites-available/greenstone-storefront.conf
+    mkdir -p /etc/nginx/sites-enabled
+    for enabled_site in /etc/nginx/sites-enabled/*; do
+      if [ -f "\$enabled_site" ] && grep -qE 'server_name[[:space:]]+[^;]*greenlinewellnes\.shop' "\$enabled_site" && [ "\$enabled_site" != /etc/nginx/sites-enabled/greenstone-storefront.conf ]; then
+        rm -f "\$enabled_site"
+      fi
+    done
+    ln -sfn /etc/nginx/sites-available/greenstone-storefront.conf /etc/nginx/sites-enabled/greenstone-storefront.conf
+    nginx -t
+    systemctl reload nginx
+  fi
 "
 
 echo "Deployment completed."
