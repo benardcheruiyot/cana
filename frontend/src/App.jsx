@@ -43,7 +43,7 @@ export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const isCheckoutRoute = location.pathname === '/checkout' || location.pathname === '/checkout/';
-  const SUPPORT_CHAT_URL = 'https://wa.me/19408820131?text=Hi%2C%20I%20need%20help%20with%20my%20order';
+  const SUPPORT_CHAT_URL = 'https://wa.me/12513379407?text=Hi%2C%20I%20need%20help%20with%20my%20order';
 
   useEffect(() => {
     search();
@@ -302,7 +302,7 @@ export default function App() {
 
         <div className="topbar">
           <span className="topbarLabel">CALL/TEXT</span>
-          <a href="tel:+19408820131" className="topbarLink">
+          <a href="tel:+12513379407" className="topbarLink">
             +1 (251) 337-9407
           </a>
           <div className="topbarLinks">
@@ -637,7 +637,7 @@ export default function App() {
             </a>
             <a
               className="whatsAppFab"
-              href="https://wa.me/19408820131"
+              href="https://wa.me/12513379407"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Message Johnson on WhatsApp"
