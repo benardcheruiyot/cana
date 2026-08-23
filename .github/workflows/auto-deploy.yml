@@ -10,10 +10,6 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     env:
-      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-      SSH_USER: ${{ secrets.SSH_USER }}
-      SSH_HOST: ${{ secrets.SSH_HOST }}
-      TARGET_DIR: ${{ secrets.TARGET_DIR }}
       INTERSERVER_HOST: ${{ secrets.INTERSERVER_HOST }}
       INTERSERVER_USER: ${{ secrets.INTERSERVER_USER }}
       INTERSERVER_PASSWORD: ${{ secrets.INTERSERVER_PASSWORD }}
@@ -47,44 +43,23 @@ jobs:
       - name: Validate required deploy secrets
         run: |
           missing=()
-          if [ -n "${SSH_PRIVATE_KEY:-}" ]; then
-            for required in SSH_USER SSH_HOST TARGET_DIR; do
-              if [ -z "${!required:-}" ]; then
-                missing+=("${required}")
-              fi
-            done
-            if [ "$(basename "${TARGET_DIR:-}")" != "greenstone-storefront" ]; then
-              missing+=("TARGET_DIR must end in /greenstone-storefront")
+          for required in INTERSERVER_HOST INTERSERVER_USER INTERSERVER_PASSWORD; do
+            if [ -z "${!required:-}" ]; then
+              missing+=("${required}")
             fi
-          else
-            if [ -z "${INTERSERVER_HOST:-}" ] || [ -z "${INTERSERVER_USER:-}" ] || [ -z "${INTERSERVER_PASSWORD:-}" ]; then
-              missing+=("SSH_PRIVATE_KEY or INTERSERVER_HOST/INTERSERVER_USER/INTERSERVER_PASSWORD")
-            fi
+          done
+          if [ -n "${BACKEND_TARGET_DIR:-}" ] && { [ "$(basename "${BACKEND_TARGET_DIR}")" != "backend" ] || [ "$(basename "$(dirname "${BACKEND_TARGET_DIR}")")" != "greenstone-storefront" ]; }; then
+            missing+=("BACKEND_TARGET_DIR must be the dedicated /greenstone-storefront/backend directory")
           fi
           if [ "${#missing[@]}" -ne 0 ]; then
             echo "Missing required secrets: ${missing[*]}"
             exit 1
           fi
         env:
-          SSH_PRIVATE_KEY: "${{ secrets.SSH_PRIVATE_KEY }}"
-          SSH_USER: "${{ secrets.SSH_USER }}"
-          SSH_HOST: "${{ secrets.SSH_HOST }}"
-          TARGET_DIR: "${{ secrets.TARGET_DIR }}"
           INTERSERVER_HOST: "${{ secrets.INTERSERVER_HOST }}"
           INTERSERVER_USER: "${{ secrets.INTERSERVER_USER }}"
           INTERSERVER_PASSWORD: "${{ secrets.INTERSERVER_PASSWORD }}"
-          PROD_HOST: "${{ secrets.PROD_HOST }}"
-
-      - name: Prepare SSH key deploy
-        if: ${{ env.SSH_PRIVATE_KEY != '' }}
-        uses: webfactory/ssh-agent@v0.8.1
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Deploy dist via rsync
-        if: ${{ env.SSH_PRIVATE_KEY != '' && env.SSH_USER != '' && env.SSH_HOST != '' && env.TARGET_DIR != '' }}
-        run: |
-          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" frontend/dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.TARGET_DIR }}/
+          BACKEND_TARGET_DIR: "${{ secrets.BACKEND_TARGET_DIR }}"
 
       - name: Install sshpass for InterServer deployment
         if: ${{ env.INTERSERVER_PASSWORD != '' && env.INTERSERVER_HOST != '' && env.INTERSERVER_USER != '' }}
@@ -146,10 +121,11 @@ jobs:
         if: ${{ env.BACKEND_TARGET_DIR != '' && env.SMTP_USER != '' && env.SMTP_PASS != '' && env.APP_DOMAIN != '' }}
         run: |
           echo "Uploading backend .env to $BACKEND_TARGET_DIR"
-          scp -o StrictHostKeyChecking=no backend_env.txt "${SSH_USER}@${SSH_HOST}:${BACKEND_TARGET_DIR}/.env"
+          sshpass -p "${INTERSERVER_PASSWORD}" scp -o StrictHostKeyChecking=no backend_env.txt "${INTERSERVER_USER}@${INTERSERVER_HOST}:${BACKEND_TARGET_DIR}/.env"
         env:
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
+          INTERSERVER_USER: ${{ secrets.INTERSERVER_USER }}
+          INTERSERVER_HOST: ${{ secrets.INTERSERVER_HOST }}
+          INTERSERVER_PASSWORD: ${{ secrets.INTERSERVER_PASSWORD }}
           BACKEND_TARGET_DIR: ${{ secrets.BACKEND_TARGET_DIR }}
 
       - name: Purge Cloudflare (optional)
