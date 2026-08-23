@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'cana',
+      name: 'greenstone-storefront',
       script: 'index.js',
       cwd: __dirname,
       instances: 1,
@@ -9,7 +9,7 @@ module.exports = {
       watch: false,
       env: {
         NODE_ENV: 'production',
-        PORT: 4000,
+        PORT: process.env.PORT || 4100,
       },
     },
   ],

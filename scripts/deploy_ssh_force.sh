@@ -3,7 +3,7 @@
 # Usage (example):
 #   export SSH_USER=ubuntu
 #   export SSH_HOST=example.com
-#   export TARGET_DIR=/var/www/greenline
+#   export TARGET_DIR=/var/www/greenstone-storefront
 #   export SSH_KEY_PATH=~/.ssh/id_rsa
 #   export SSH_PRIVATE_KEY_PATH=~/.ssh/id_rsa
 #   export CLOUDFLARE_ZONE_ID=...
@@ -18,7 +18,11 @@ if [ ! -d "$BUILD_DIR" ]; then
 fi
 if [ -z "${SSH_USER:-}" ] || [ -z "${SSH_HOST:-}" ] || [ -z "${TARGET_DIR:-}" ]; then
   echo "Please set SSH_USER, SSH_HOST, and TARGET_DIR environment variables."
-  echo "Example: SSH_USER=ubuntu SSH_HOST=example.com TARGET_DIR=/var/www/site ./scripts/deploy_ssh_force.sh"
+  echo "Example: SSH_USER=ubuntu SSH_HOST=example.com TARGET_DIR=/var/www/greenstone-storefront ./scripts/deploy_ssh_force.sh"
+  exit 1
+fi
+if [ "$(basename "$TARGET_DIR")" != "greenstone-storefront" ]; then
+  echo "TARGET_DIR must be a dedicated greenstone-storefront directory, for example /var/www/greenstone-storefront." >&2
   exit 1
 fi
 SSH_KEY_FILE="${SSH_KEY_PATH:-${SSH_PRIVATE_KEY_PATH:-}}"

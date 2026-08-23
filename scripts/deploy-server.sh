@@ -29,6 +29,16 @@ SERVER_IP="$1"
 SSH_USER="${SSH_USER:-root}"
 SSH_PASSWORD="${SSH_PASSWORD:-}"
 DEPLOY_ENV_FILE="${DEPLOY_ENV_FILE:-backend/.env}"
+REMOTE_APP_DIR="${REMOTE_APP_DIR:-/opt/greenstone-storefront}"
+APP_NAME="greenstone-storefront"
+APP_PORT="${APP_PORT:-4100}"
+
+case "$REMOTE_APP_DIR" in
+  /|/opt|/var/www|/var/www/html|/home|*/cana|*/html)
+    echo "REMOTE_APP_DIR must be a dedicated directory for this app (for example /opt/greenstone-storefront)." >&2
+    exit 1
+    ;;
+esac
 
 if [ -z "$SSH_PASSWORD" ]; then
   echo "Set SSH_PASSWORD before running this script." >&2
@@ -38,19 +48,19 @@ fi
 SSH_CMD="$SSHPASS_CMD -p \"$SSH_PASSWORD\" ssh -o StrictHostKeyChecking=no"
 SCP_CMD="$SSHPASS_CMD -p \"$SSH_PASSWORD\" scp -o StrictHostKeyChecking=no"
 
-$SSH_CMD "$SSH_USER@$SERVER_IP" 'mkdir -p ~/cana/backend'
+$SSH_CMD "$SSH_USER@$SERVER_IP" "mkdir -p '$REMOTE_APP_DIR/backend'"
 if [ -n "$DEPLOY_ENV_FILE" ] && [ -f "$DEPLOY_ENV_FILE" ]; then
   echo "Copying $DEPLOY_ENV_FILE to remote backend .env"
-  $SCP_CMD "$DEPLOY_ENV_FILE" "$SSH_USER@$SERVER_IP:~/cana/backend/.env"
+  $SCP_CMD "$DEPLOY_ENV_FILE" "$SSH_USER@$SERVER_IP:$REMOTE_APP_DIR/backend/.env"
 fi
 
 echo "Deploying current local source to the remote server"
-tar --exclude='./backend/.env' --exclude='./backend/node_modules' --exclude='./frontend/node_modules' --exclude='./.git' -cf - backend frontend package.json package-lock.json scripts | $SSH_CMD "$SSH_USER@$SERVER_IP" 'cd ~/cana && tar -xpf -'
+tar --exclude='./backend/.env' --exclude='./backend/node_modules' --exclude='./frontend/node_modules' --exclude='./.git' -cf - backend frontend package.json package-lock.json scripts | $SSH_CMD "$SSH_USER@$SERVER_IP" "cd '$REMOTE_APP_DIR' && tar -xpf -"
 
-$SSH_CMD "$SSH_USER@$SERVER_IP" '
+$SSH_CMD "$SSH_USER@$SERVER_IP" "
   set -e
-  mkdir -p ~/cana
-  cd ~/cana
+  mkdir -p '$REMOTE_APP_DIR'
+  cd '$REMOTE_APP_DIR'
   npm ci
   cd frontend
   npm ci
@@ -58,17 +68,11 @@ $SSH_CMD "$SSH_USER@$SERVER_IP" '
   cd ../backend
   npm ci
   if [ ! -f .env ]; then
-    cat > .env <<"EOF"
-PORT=4000
-CORS_ORIGIN=https://greenlinewellnes.shop,https://www.greenlinewellnes.shop
-APP_DOMAIN=greenlinewellnes.shop
-EMAIL_NOTIFICATIONS_ENABLED=false
-EOF
+    printf '%s\\n' 'PORT=$APP_PORT' 'CORS_ORIGIN=https://greenlinewellnes.shop,https://www.greenlinewellnes.shop' 'APP_DOMAIN=greenlinewellnes.shop' 'EMAIL_NOTIFICATIONS_ENABLED=false' > .env
   fi
   npm install -g pm2
-  pm2 delete cana || true
-  pm2 start index.js --name cana --watch false --cwd "$PWD"
+  pm2 startOrRestart ecosystem.config.js --only '$APP_NAME' --update-env
   pm2 save
-'
+"
 
 echo "Deployment completed."

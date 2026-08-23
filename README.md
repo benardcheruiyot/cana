@@ -13,7 +13,7 @@ npm run dev
 ```
 
 This runs both:
-- backend on http://localhost:4000
+- backend on http://localhost:4100
 - frontend on http://localhost:5173 (opens automatically in the browser)
 
 Production build:
@@ -36,8 +36,15 @@ This project is designed for split-stack deployment:
 - Upload project to your server.
 - Install dependencies in root and backend.
 - Build frontend once from project root so backend can serve dist if needed.
-- Run backend with a process manager (for example PM2) on port 4000.
+- Run this app with PM2 process `greenstone-storefront` on port 4100.
 - Put Nginx or Apache reverse proxy in front and enable SSL.
+
+The production deployment is intentionally isolated from other apps on the same
+server. Keep this app in `/opt/greenstone-storefront`, use PM2 process
+`greenstone-storefront`, and proxy only `greenlinewellnes.shop` and
+`www.greenlinewellnes.shop` to `127.0.0.1:4100`. Enable exactly one of the
+`cana-*.conf` files for this host; never enable the wildcard/default config
+alongside another app's site config.
 
 2. Set backend environment values:
 - CORS_ORIGIN=https://your-frontend-domain.com
@@ -75,7 +82,7 @@ Architecture:
 - Upload project to your server.
 - Install dependencies in root and backend.
 - Build frontend once from project root so backend can serve dist if needed.
-- Run backend with a process manager (for example PM2) on port 4000.
+- Run this app with PM2 process `greenstone-storefront` on port 4100.
 - Put Nginx or Apache reverse proxy in front and enable SSL.
 
 2. Set backend environment values:

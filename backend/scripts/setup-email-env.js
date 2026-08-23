@@ -45,7 +45,7 @@ function makeDefaults(domain) {
   const token = crypto.randomBytes(24).toString('hex')
 
   return {
-    PORT: '4000',
+    PORT: '4100',
     CORS_ORIGIN: 'http://localhost:5173',
     EMAIL_NOTIFICATIONS_ENABLED: 'true',
     SMTP_HOST: 'smtp-relay.brevo.com',

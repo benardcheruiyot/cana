@@ -72,7 +72,7 @@ Body:
 PowerShell example:
 
 ```powershell
-Invoke-RestMethod -Method Post -Uri http://localhost:4000/api/orders/test-email `
+Invoke-RestMethod -Method Post -Uri http://localhost:4100/api/orders/test-email `
 	-Headers @{ "x-email-test-token" = "your_secure_random_token" } `
 	-ContentType "application/json" `
 	-Body '{"email":"you@example.com"}'
@@ -111,7 +111,7 @@ TELEGRAM_CHAT_ID=your_private_chat_or_group_id
 To send a sample Telegram alert without placing a new order:
 
 ```powershell
-Invoke-RestMethod -Method Post -Uri http://localhost:4000/api/orders/test-telegram `
+Invoke-RestMethod -Method Post -Uri http://localhost:4100/api/orders/test-telegram `
 	-Headers @{ "x-email-test-token" = "your_secure_random_token" } `
 	-ContentType "application/json" `
 	-Body '{}'
