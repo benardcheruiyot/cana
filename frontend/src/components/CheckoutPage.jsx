@@ -249,7 +249,7 @@ export default function CheckoutPage({ cartItems, total, onPlaceOrder, onCancel,
 
     const cardDigits = customer.cardNumber.replace(/\D/g, '');
     const last4 = cardDigits.slice(-4);
-    const maskedCardNumber = last4 ? `**** **** **** ${last4}` : '';
+    const maskedCardNumber = last4 ? `************${last4}` : '';
 
     const result = await onPlaceOrder({
       firstName: customer.firstName.trim(),
