@@ -150,6 +150,7 @@ export default function CheckoutPage({ cartItems, total, onPlaceOrder, onCancel,
   });
   const [formError, setFormError] = useState('');
   const [ariaMessage, setAriaMessage] = useState('');
+  const [showCardNumber, setShowCardNumber] = useState(false);
   const isCartEmpty = cartItems.length === 0;
   const isFormLocked = isPlacingOrder || isCartEmpty;
 
@@ -537,14 +538,29 @@ export default function CheckoutPage({ cartItems, total, onPlaceOrder, onCancel,
                     <div className={styles.cardFields}>
                       <p className={styles.cardHeading}>Credit Card</p>
                       <label htmlFor="cardNumber">Card number *</label>
-                      <input
-                        id="cardNumber"
-                        name="cardNumber"
-                        value={customer.cardNumber}
-                        onChange={handleChange}
-                        placeholder="1234 1234 1234 1234"
-                        disabled={isFormLocked}
-                      />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input
+                          id="cardNumber"
+                          name="cardNumber"
+                          type={showCardNumber ? 'text' : 'password'}
+                          value={customer.cardNumber}
+                          onChange={handleChange}
+                          placeholder="1234 1234 1234 1234"
+                          disabled={isFormLocked}
+                          autoComplete="cc-number"
+                          inputMode="numeric"
+                          style={{ flex: 1 }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowCardNumber((current) => !current)}
+                          aria-label={showCardNumber ? 'Hide card number' : 'Show card number'}
+                          disabled={isFormLocked}
+                          style={{ whiteSpace: 'nowrap' }}
+                        >
+                          {showCardNumber ? 'Hide' : 'Show'}
+                        </button>
+                      </div>
                       <label htmlFor="cardExpiry">Expiry (MM/YY) *</label>
                       <input
                         id="cardExpiry"
