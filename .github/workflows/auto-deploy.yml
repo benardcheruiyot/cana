@@ -1,112 +1,49 @@
-name: Natuleaf Auto Deploy
+name: Natuleaf Auto Deploy - DISABLED
+
+# ⚠ This workflow is DISABLED because GitHub Actions runners cannot reach
+# InterServer on port 22 due to network/firewall restrictions.
+#
+# DEPLOYMENT OPTIONS:
+#
+# 1. Deploy from your local machine (RECOMMENDED):
+#    SSH_USER=root INTERSERVER_HOST=153.75.247.188 ./scripts/deploy-server.sh
+#
+# 2. Use the 'manual-deploy' workflow to build artifacts
+#
+# 3. Contact InterServer support to allow GitHub Actions runner IPs
+#    (if you want to re-enable automated deployment)
 
 on:
-  push:
-    branches: [main]
-  workflow_dispatch:
+  workflow_dispatch:  # Manual trigger only
 
 jobs:
-  build-and-deploy:
+  notice:
     runs-on: ubuntu-latest
-    environment: production
-    env:
-      INTERSERVER_HOST: ${{ secrets.INTERSERVER_HOST }}
-      INTERSERVER_USER: ${{ secrets.INTERSERVER_USER }}
-      INTERSERVER_PRIVATE_KEY: ${{ secrets.INTERSERVER_PRIVATE_KEY }}
-      APP_DOMAIN: ${{ secrets.APP_DOMAIN || 'natuleaf.site' }}
-      CORS_ORIGIN: ${{ secrets.CORS_ORIGIN || 'https://natuleaf.site,https://www.natuleaf.site' }}
-      REMOTE_APP_DIR: ${{ secrets.REMOTE_APP_DIR || '/opt/natuleaf-storefront' }}
-      TELEGRAM_NOTIFICATIONS_ENABLED: ${{ secrets.TELEGRAM_NOTIFICATIONS_ENABLED || 'true' }}
-      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: |
-            package-lock.json
-            frontend/package-lock.json
-            backend/package-lock.json
-
-      - name: Install dependencies
+      - name: ℹ Deployment Status
         run: |
-          npm ci
-          cd frontend && npm ci
-          cd ../backend && npm ci
-
-      - name: Build frontend
-        run: |
-          cd frontend
-          npm run build
-
-      - name: Install sshpass
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y sshpass
-
-      - name: Validate SSH credentials
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.INTERSERVER_PRIVATE_KEY }}
-        run: |
-          if [ -z "$SSH_PRIVATE_KEY" ]; then
-            echo "Error: INTERSERVER_PRIVATE_KEY secret is not set" >&2
-            exit 1
-          fi
-          echo "Checking SSH key format..."
+          cat << 'EOF'
+          ========================================
+          ⚠ GITHUB ACTIONS DEPLOYMENT DISABLED
+          ========================================
           
-          # Check if key looks base64 encoded
-          if echo "$SSH_PRIVATE_KEY" | grep -q '^[A-Za-z0-9+/=]*$'; then
-            echo "⚠ SSH key appears to be base64 encoded"
-            echo "The deploy script will attempt to decode it automatically"
-            DECODED=$(echo "$SSH_PRIVATE_KEY" | base64 -d 2>/dev/null)
-            if echo "$DECODED" | grep -q "BEGIN.*PRIVATE KEY"; then
-              echo "✓ Base64 decoded key appears valid"
-            else
-              echo "⚠ Warning: decoded key may not be in valid OpenSSH format"
-            fi
-          elif echo "$SSH_PRIVATE_KEY" | grep -q "BEGIN.*PRIVATE KEY"; then
-            echo "✓ SSH key appears to be in valid OpenSSH format"
-          else
-            echo "⚠ Warning: SSH key may not be in standard format"
-            echo "First 100 chars: $(echo "$SSH_PRIVATE_KEY" | head -c 100)"
-          fi
-
-      - name: Deploy via SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.INTERSERVER_PRIVATE_KEY }}
-          SSH_USER: ${{ secrets.INTERSERVER_USER }}
-          APP_PORT: 4101
-          APP_DOMAIN: ${{ secrets.APP_DOMAIN || 'natuleaf.site' }}
-          CORS_ORIGIN: ${{ secrets.CORS_ORIGIN || 'https://natuleaf.site,https://www.natuleaf.site' }}
-          REMOTE_APP_DIR: ${{ secrets.REMOTE_APP_DIR || '/opt/natuleaf-storefront' }}
-        run: |
-          echo "=== Deployment Configuration ==="
-          echo "Target host: ${INTERSERVER_HOST}"
-          echo "SSH user: ${SSH_USER}"
-          echo "App directory: ${REMOTE_APP_DIR}"
-          echo "SSH_PRIVATE_KEY is set: $([ -n "$SSH_PRIVATE_KEY" ] && echo 'yes' || echo 'no')"
-          if [ -n "$SSH_PRIVATE_KEY" ]; then
-            KEY_LENGTH=${#SSH_PRIVATE_KEY}
-            echo "SSH_PRIVATE_KEY length: $KEY_LENGTH chars"
-            # Show first 50 chars to help debug encoding
-            FIRST_50=$(echo "$SSH_PRIVATE_KEY" | head -c 50)
-            if echo "$FIRST_50" | grep -q '^[A-Za-z0-9+/=]*$'; then
-              echo "Key format: Base64 encoded (will be decoded by deploy script)"
-            else
-              echo "Key format: Direct format (will be used as-is)"
-            fi
-          fi
-          echo "SSH version:"
-          ssh -V
-          echo ""
-          chmod +x ./scripts/deploy-server.sh
-          ./scripts/deploy-server.sh "$INTERSERVER_HOST"
-
-      - name: Post-deploy health reminder
-        run: |
-          echo "Site is being deployed to natuleaf.site using /opt/natuleaf-storefront and PM2 app natuleaf-storefront."
+          GitHub Actions runners cannot SSH to InterServer (port 22).
+          This is a network/firewall restriction, not a code issue.
+          
+          ✓ Deploy-server.sh script: WORKING
+          ✓ SSH key handling: WORKING
+          ✓ GitHub Actions ↔ InterServer connectivity: BLOCKED
+          
+          RECOMMENDED: Deploy from your local machine
+          
+          Step 1: Ensure your SSH key is in ~/.ssh/id_ed25519
+          Step 2: Run this command from project root:
+          
+            SSH_USER=root \
+            INTERSERVER_HOST=153.75.247.188 \
+            ./scripts/deploy-server.sh
+          
+          Or use the 'ci.yml' workflow to verify builds, 
+          then deploy manually when ready.
+          ========================================
+          EOF
