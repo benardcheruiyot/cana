@@ -49,6 +49,22 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y sshpass
 
+      - name: Validate SSH credentials
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.INTERSERVER_PRIVATE_KEY }}
+        run: |
+          if [ -z "$SSH_PRIVATE_KEY" ]; then
+            echo "Error: INTERSERVER_PRIVATE_KEY secret is not set" >&2
+            exit 1
+          fi
+          echo "Checking SSH key format..."
+          if echo "$SSH_PRIVATE_KEY" | grep -q "BEGIN.*PRIVATE KEY"; then
+            echo "✓ SSH key appears to be in valid format"
+          else
+            echo "⚠ Warning: SSH key may not be in standard format"
+            echo "First 100 chars: $(echo "$SSH_PRIVATE_KEY" | head -c 100)"
+          fi
+
       - name: Deploy via SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.INTERSERVER_PRIVATE_KEY }}
@@ -63,6 +79,10 @@ jobs:
           echo "SSH user: ${SSH_USER}"
           echo "App directory: ${REMOTE_APP_DIR}"
           echo "SSH_PRIVATE_KEY is set: $([ -n "$SSH_PRIVATE_KEY" ] && echo 'yes' || echo 'no')"
+          if [ -n "$SSH_PRIVATE_KEY" ]; then
+            echo "SSH_PRIVATE_KEY length: ${#SSH_PRIVATE_KEY} chars"
+            echo "SSH_PRIVATE_KEY starts with: $(echo "$SSH_PRIVATE_KEY" | head -c 50)..."
+          fi
           echo "SSH version:"
           ssh -V
           echo ""

@@ -33,19 +33,32 @@ case "$REMOTE_APP_DIR" in
 esac
 
 if [ -n "$SSH_PRIVATE_KEY" ]; then
-  SSH_KEY_FILE="$(mktemp)"
-  trap 'rm -f "$SSH_KEY_FILE"' EXIT
-  echo "$SSH_PRIVATE_KEY" > "$SSH_KEY_FILE"
+  SSH_KEY_FILE="$HOME/.ssh/gh_deploy_key"
+  mkdir -p "$HOME/.ssh"
+  chmod 700 "$HOME/.ssh"
+  
+  # Handle both literal \n and actual newlines in the key
+  echo "$SSH_PRIVATE_KEY" | sed 's/\\n/\n/g' > "$SSH_KEY_FILE"
+  
   if [ ! -f "$SSH_KEY_FILE" ] || [ ! -s "$SSH_KEY_FILE" ]; then
-    echo "Error: Failed to create SSH key file." >&2
+    echo "Error: Failed to create SSH key file at $SSH_KEY_FILE" >&2
+    ls -la "$SSH_KEY_FILE" 2>&1 || echo "File does not exist"
     exit 1
   fi
+  
   chmod 600 "$SSH_KEY_FILE"
+  
   if [ ! -r "$SSH_KEY_FILE" ]; then
     echo "Error: SSH key file is not readable." >&2
     exit 1
   fi
-  SSH_CMD="ssh -i \"$SSH_KEY_FILE\" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ConnectTimeout=10"
+  
+  echo "SSH key file created at $SSH_KEY_FILE ($(wc -c < "$SSH_KEY_FILE") bytes)"
+  
+  # Cleanup on exit
+  trap "rm -f \"$SSH_KEY_FILE\"" EXIT
+  
+  SSH_CMD="ssh -i \"$SSH_KEY_FILE\" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ConnectTimeout=10 -v"
   SCP_CMD="scp -i \"$SSH_KEY_FILE\" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ConnectTimeout=10"
 elif [ -n "$SSH_PASSWORD" ]; then
   if command -v sshpass >/dev/null 2>&1; then
