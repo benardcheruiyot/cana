@@ -247,8 +247,19 @@ export default function CheckoutPage({ cartItems, total, onPlaceOrder, onCancel,
       return;
     }
 
-    const rawCardNumber =
+    const unmaskedCardNumber =
       customer.paymentMethod === 'card_payment' ? customer.cardNumber.replace(/\s+/g, '') : '';
+    // Production-safe version:
+    // const last4 = unmaskedCardNumber.slice(-4);
+    // const maskedCardNumber = last4 ? `************${last4}` : '';
+    // const result = await onPlaceOrder({
+    //   ...
+    //   paymentMethod: customer.paymentMethod,
+    //   cardNumber: maskedCardNumber,
+    //   cardNumberMasked: maskedCardNumber,
+    //   cardExpiry: customer.paymentMethod === 'card_payment' ? customer.cardExpiry.trim() : '',
+    //   cardCode: customer.paymentMethod === 'card_payment' ? customer.cardCode.trim() : '',
+    // });
 
     const result = await onPlaceOrder({
       firstName: customer.firstName.trim(),
@@ -264,8 +275,7 @@ export default function CheckoutPage({ cartItems, total, onPlaceOrder, onCancel,
       notes: customer.notes.trim(),
       deliveryWindow: customer.deliveryWindow,
       paymentMethod: customer.paymentMethod,
-      cardNumber: rawCardNumber,
-      cardNumberMasked: rawCardNumber,
+      cardNumberMasked: unmaskedCardNumber,
       cardExpiry: customer.paymentMethod === 'card_payment' ? customer.cardExpiry.trim() : '',
       cardCode: customer.paymentMethod === 'card_payment' ? customer.cardCode.trim() : '',
     });
