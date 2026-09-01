@@ -35,10 +35,18 @@ esac
 if [ -n "$SSH_PRIVATE_KEY" ]; then
   SSH_KEY_FILE="$(mktemp)"
   trap 'rm -f "$SSH_KEY_FILE"' EXIT
-  printf '%s\n' "$SSH_PRIVATE_KEY" > "$SSH_KEY_FILE"
+  echo "$SSH_PRIVATE_KEY" > "$SSH_KEY_FILE"
+  if [ ! -f "$SSH_KEY_FILE" ] || [ ! -s "$SSH_KEY_FILE" ]; then
+    echo "Error: Failed to create SSH key file." >&2
+    exit 1
+  fi
   chmod 600 "$SSH_KEY_FILE"
-  SSH_CMD="ssh -i \"$SSH_KEY_FILE\" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes"
-  SCP_CMD="scp -i \"$SSH_KEY_FILE\" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes"
+  if [ ! -r "$SSH_KEY_FILE" ]; then
+    echo "Error: SSH key file is not readable." >&2
+    exit 1
+  fi
+  SSH_CMD="ssh -i \"$SSH_KEY_FILE\" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ConnectTimeout=10"
+  SCP_CMD="scp -i \"$SSH_KEY_FILE\" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ConnectTimeout=10"
 elif [ -n "$SSH_PASSWORD" ]; then
   if command -v sshpass >/dev/null 2>&1; then
     SSHPASS_CMD="sshpass"
@@ -54,6 +62,12 @@ elif [ -n "$SSH_PASSWORD" ]; then
   SCP_CMD="$SSHPASS_CMD -p \"$SSH_PASSWORD\" scp -o StrictHostKeyChecking=no"
 else
   echo "Set SSH_PRIVATE_KEY or SSH_PASSWORD before running this script." >&2
+  exit 1
+fi
+
+echo "Testing SSH connection to $SSH_USER@$SERVER_IP..."
+if ! $SSH_CMD "$SSH_USER@$SERVER_IP" "echo 'SSH connection successful.'" 2>&1 | head -n 5; then
+  echo "Error: Cannot connect to $SSH_USER@$SERVER_IP via SSH. Check host, credentials, and network." >&2
   exit 1
 fi
 
