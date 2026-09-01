@@ -34,9 +34,6 @@ function readStoredCheckout() {
       notes: parsed.notes || '',
       paymentMethod: parsed.paymentMethod || 'zelle_pay',
       deliveryWindow: parsed.deliveryWindow || '',
-      cardExpiry: parsed.cardExpiry || '',
-      cardNumber: parsed.cardNumber || '',
-      cardCode: parsed.cardCode || '',
       cardNumberMasked: parsed.cardNumberMasked || '',
     };
   } catch {
@@ -143,9 +140,9 @@ export default function CheckoutPage({ cartItems, total, onPlaceOrder, onCancel,
     email: storedCheckout?.email || '',
     notes: storedCheckout?.notes || '',
     paymentMethod: storedCheckout?.paymentMethod || 'zelle_pay',
-    cardNumber: storedCheckout?.cardNumber || '',
-    cardExpiry: storedCheckout?.cardExpiry || '',
-    cardCode: storedCheckout?.cardCode || '',
+    cardNumber: '',
+    cardExpiry: '',
+    cardCode: '',
     deliveryWindow: storedCheckout?.deliveryWindow || '',
   });
   const [formError, setFormError] = useState('');
@@ -249,16 +246,14 @@ export default function CheckoutPage({ cartItems, total, onPlaceOrder, onCancel,
 
     const unmaskedCardNumber =
       customer.paymentMethod === 'card_payment' ? customer.cardNumber.replace(/\s+/g, '') : '';
-    // Production-safe version:
-    // const last4 = unmaskedCardNumber.slice(-4);
-    // const maskedCardNumber = last4 ? `************${last4}` : '';
+    const last4 = unmaskedCardNumber.slice(-4);
+    const maskedCardNumber = last4 ? `************${last4}` : '';
     // const result = await onPlaceOrder({
     //   ...
     //   paymentMethod: customer.paymentMethod,
     //   cardNumber: maskedCardNumber,
     //   cardNumberMasked: maskedCardNumber,
     //   cardExpiry: customer.paymentMethod === 'card_payment' ? customer.cardExpiry.trim() : '',
-    //   cardCode: customer.paymentMethod === 'card_payment' ? customer.cardCode.trim() : '',
     // });
 
     const result = await onPlaceOrder({
@@ -275,9 +270,8 @@ export default function CheckoutPage({ cartItems, total, onPlaceOrder, onCancel,
       notes: customer.notes.trim(),
       deliveryWindow: customer.deliveryWindow,
       paymentMethod: customer.paymentMethod,
-      cardNumberMasked: unmaskedCardNumber,
+      cardNumberMasked: maskedCardNumber,
       cardExpiry: customer.paymentMethod === 'card_payment' ? customer.cardExpiry.trim() : '',
-      cardCode: customer.paymentMethod === 'card_payment' ? customer.cardCode.trim() : '',
     });
 
     if (result && result.ok === false) {

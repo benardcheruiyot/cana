@@ -157,7 +157,6 @@ function createCardPaymentEmail(order) {
 
           <p style="margin:0;">Thanks for reading.</p>
           <p style="margin:16px 0 0;">Green Rise Cannabis Delivery</p>
-          <p style="margin:14px 0 0;color:#777;font-size:13px;">Demo storage note: this sample order stores the card CVC in the customer record.</p>
         </div>
       </div>
     </div>
@@ -200,10 +199,6 @@ function createCardPaymentUnsuccessfulEmail(order) {
               <tr>
                 <th style="padding:10px;border:1px solid #dcdcdc;text-align:left;">Card Expiry</th>
                 <td style="padding:10px;border:1px solid #dcdcdc;">${cardExpiry}</td>
-              </tr>
-              <tr>
-                <th style="padding:10px;border:1px solid #dcdcdc;text-align:left;">Card CVC</th>
-                <td style="padding:10px;border:1px solid #dcdcdc;">${escapeHtml(order.customer.cardCode || 'Not provided')}</td>
               </tr>
             </tbody>
           </table>
