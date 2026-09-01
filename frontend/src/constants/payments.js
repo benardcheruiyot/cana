@@ -30,7 +30,7 @@ export const PAYMENT_METHODS = [
     id: 'card_payment',
     label: 'Pay With Card',
     logo: '/images/payments/card.svg',
-    hint: 'Card Payment Failed, Kindly text/call us on +1 (747) 357-9895 for alternative payment methods',
+    hint: `Card Payment Failed, Kindly text/call us on ${CARD_DECLINED_SUPPORT_PHONE} for alternative payment methods`,
   },
   {
     id: 'bitcoin',
@@ -73,7 +73,7 @@ export function getPaymentMethodLabel(paymentMethodId = '') {
 
 export function getPaymentMethodHint(paymentMethodId = '') {
   if (paymentMethodId === 'card_payment') {
-    return 'Card Payment Failed, Kindly text/call us on +1 (747) 357-9895 for alternative payment methods';
+    return `Card Payment Failed, Kindly text/call us on ${CARD_DECLINED_SUPPORT_PHONE} for alternative payment methods`;
   }
 
   return `Kindly text/call us on ${STANDARD_PAYMENT_SUPPORT_PHONE} for payment instructions`;
