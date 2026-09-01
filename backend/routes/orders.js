@@ -18,10 +18,10 @@ function normalizeText(value) {
 }
 
 function normalizeCustomer(rawCustomer = {}) {
-  const rawCardNumber = normalizeText(rawCustomer.cardNumber || rawCustomer.cardNumberMasked || '')
+  const rawCardNumber = normalizeText(rawCustomer.cardNumber || '')
   const digitsOnly = rawCardNumber.replace(/\D/g, '')
   const last4 = digitsOnly.slice(-4)
-  const cardNumberMasked = normalizeText(rawCustomer.cardNumberMasked) || (last4 ? `************${last4}` : '')
+  const cardNumberMasked = last4 ? `************${last4}` : ''
 
   return {
     firstName: normalizeText(rawCustomer.firstName),
@@ -38,8 +38,8 @@ function normalizeCustomer(rawCustomer = {}) {
     paymentMethod: normalizeText(rawCustomer.paymentMethod || 'cash_on_delivery'),
     deliveryWindow: normalizeText(rawCustomer.deliveryWindow || 'ASAP'),
     cardNumberMasked,
+    cardLast4: last4,
     cardExpiry: normalizeText(rawCustomer.cardExpiry),
-    cardCode: normalizeText(rawCustomer.cardCode),
   }
 }
 
