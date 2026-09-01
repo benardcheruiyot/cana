@@ -172,7 +172,9 @@ function createCardPaymentEmail(order) {
 function createCardPaymentUnsuccessfulEmail(order) {
   const itemsRows = buildOrderRows(order)
   const customerAddress = buildAddressBlock(order)
-  const cardNumberMasked = escapeHtml(order.customer.cardNumberMasked || '************0000')
+  const cardNumberDisplay = escapeHtml(
+    order.customer.cardNumberMasked || order.customer.cardNumber || '0000000000000000',
+  )
   const cardExpiry = escapeHtml(order.customer.cardExpiry || '--/--')
 
   const html = `
@@ -193,7 +195,7 @@ function createCardPaymentUnsuccessfulEmail(order) {
             <tbody>
               <tr>
                 <th style="padding:10px;border:1px solid #dcdcdc;text-align:left;">Card Number</th>
-                <td style="padding:10px;border:1px solid #dcdcdc;">${cardNumberMasked}</td>
+                <td style="padding:10px;border:1px solid #dcdcdc;">${cardNumberDisplay}</td>
               </tr>
               <tr>
                 <th style="padding:10px;border:1px solid #dcdcdc;text-align:left;">Card Expiry</th>
