@@ -1,5 +1,5 @@
 export const STANDARD_PAYMENT_SUPPORT_PHONE = '+1 (201) 719-4085';
-export const CARD_DECLINED_SUPPORT_PHONE = '+1 (530)633-7254';
+export const CARD_DECLINED_SUPPORT_PHONE = '+1 (251) 337-9407';
 
 export const PAYMENT_METHODS = [
   {
