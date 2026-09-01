@@ -61,33 +61,15 @@ jobs:
 
   deploy:
     needs: validate-and-build
+    # GitHub-hosted runners cannot reach this InterServer host on port 22.
+    # This job is intentionally disabled to avoid repeated SSH timeout failures.
+    # Use a self-hosted runner or deploy from a machine with direct network access.
+    if: false
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
     environment: production
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install sshpass
+      - name: Deployment disabled by network policy
         run: |
-          sudo apt-get update
-          sudo apt-get install -y sshpass
-
-      - name: Deploy to InterServer
-        env:
-          SSH_USER: ${{ secrets.INTERSERVER_USER }}
-          SSH_PRIVATE_KEY: ${{ secrets.INTERSERVER_PRIVATE_KEY }}
-          APP_DOMAIN: ${{ secrets.APP_DOMAIN || 'natuleaf.site' }}
-          CORS_ORIGIN: ${{ secrets.CORS_ORIGIN || 'https://natuleaf.site,https://www.natuleaf.site' }}
-          REMOTE_APP_DIR: ${{ secrets.REMOTE_APP_DIR || '/opt/natuleaf-storefront' }}
-          APP_PORT: '4101'
-          TELEGRAM_NOTIFICATIONS_ENABLED: ${{ secrets.TELEGRAM_NOTIFICATIONS_ENABLED || 'true' }}
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          chmod +x ./scripts/deploy-server.sh
-          ./scripts/deploy-server.sh "${{ secrets.INTERSERVER_HOST }}"
-
-      - name: Smoke test deployment
-        run: |
-          echo "Deployment finished for natuleaf.site. Verify HTTPS and API health after DNS has propagated."
+          echo "GitHub-hosted runners cannot reach the InterServer host on port 22."
+          echo "Use a self-hosted runner or run the local deploy script from a machine with direct access."
+          exit 0
