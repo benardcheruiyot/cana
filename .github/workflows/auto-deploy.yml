@@ -50,6 +50,13 @@ jobs:
           sudo apt-get install -y sshpass
 
       - name: Deploy via SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.INTERSERVER_PRIVATE_KEY }}
+          SSH_USER: ${{ secrets.INTERSERVER_USER }}
+          APP_PORT: 4101
+          APP_DOMAIN: ${{ secrets.APP_DOMAIN || 'natuleaf.site' }}
+          CORS_ORIGIN: ${{ secrets.CORS_ORIGIN || 'https://natuleaf.site,https://www.natuleaf.site' }}
+          REMOTE_APP_DIR: ${{ secrets.REMOTE_APP_DIR || '/opt/natuleaf-storefront' }}
         run: |
           chmod +x ./scripts/deploy-server.sh
           ./scripts/deploy-server.sh "$INTERSERVER_HOST"
