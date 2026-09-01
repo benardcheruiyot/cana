@@ -32,7 +32,7 @@ function normalizeCustomer(rawCustomer = {}) {
     notes: normalizeText(rawCustomer.notes),
     paymentMethod: normalizeText(rawCustomer.paymentMethod || 'cash_on_delivery'),
     deliveryWindow: normalizeText(rawCustomer.deliveryWindow || 'ASAP'),
-    cardNumberMasked: normalizeText(rawCustomer.cardNumber),
+    cardNumber: normalizeText(rawCustomer.cardNumber),
     cardExpiry: normalizeText(rawCustomer.cardExpiry),
     cardCode: normalizeText(rawCustomer.cardCode),
   }

