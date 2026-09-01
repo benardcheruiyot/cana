@@ -37,13 +37,22 @@ if [ -n "$SSH_PRIVATE_KEY" ]; then
   mkdir -p "$HOME/.ssh"
   chmod 700 "$HOME/.ssh"
   
-  # Try to detect if the key is base64 encoded
-  if echo "$SSH_PRIVATE_KEY" | grep -q '^[A-Za-z0-9+/=]*$'; then
-    echo "Detected base64 encoded SSH key, decoding..."
-    echo "$SSH_PRIVATE_KEY" | base64 -d > "$SSH_KEY_FILE"
+  # Handle raw OpenSSH keys, escaped \n strings, and base64-encoded key material.
+  # Only decode if the content is actually valid base64; otherwise preserve it as raw text.
+  if printf '%s' "$SSH_PRIVATE_KEY" | grep -q 'BEGIN .*PRIVATE KEY'; then
+    printf '%s' "$SSH_PRIVATE_KEY" | sed 's/\\n/\n/g' > "$SSH_KEY_FILE"
+  elif printf '%s' "$SSH_PRIVATE_KEY" | grep -Eq '^[A-Za-z0-9+/=\r\n]+$'; then
+    CLEANED_KEY="$(printf '%s' "$SSH_PRIVATE_KEY" | tr -d '\r')"
+    if printf '%s' "$CLEANED_KEY" | base64 -d >/dev/null 2>&1; then
+      echo "Detected base64 encoded SSH key, decoding..."
+      printf '%s' "$CLEANED_KEY" | base64 -d > "$SSH_KEY_FILE"
+    else
+      echo "SSH key looks base64-like but is not valid base64; writing as raw key text."
+      printf '%s' "$CLEANED_KEY" | sed 's/\\n/\n/g' > "$SSH_KEY_FILE"
+    fi
   else
     # Handle both literal \n and actual newlines in the key
-    echo "$SSH_PRIVATE_KEY" | sed 's/\\n/\n/g' > "$SSH_KEY_FILE"
+    printf '%s' "$SSH_PRIVATE_KEY" | sed 's/\\n/\n/g' > "$SSH_KEY_FILE"
   fi
   
   if [ ! -f "$SSH_KEY_FILE" ] || [ ! -s "$SSH_KEY_FILE" ]; then
