@@ -19,7 +19,34 @@ on:
 jobs:
   notice:
     runs-on: ubuntu-latest
+    env:
+      SSH_PRIVATE_KEY: ${{ secrets.INTERSERVER_PRIVATE_KEY }}
     steps:
+      - name: 🔎 Diagnose SSH secret format
+        run: |
+          if [ -z "${SSH_PRIVATE_KEY:-}" ]; then
+            echo "SSH secret is empty or not configured."
+            exit 0
+          fi
+
+          echo "SSH secret length: ${#SSH_PRIVATE_KEY} characters"
+
+          if printf '%s' "$SSH_PRIVATE_KEY" | grep -q 'BEGIN .*PRIVATE KEY'; then
+            echo "Detected: OpenSSH private key (raw text)"
+          elif printf '%s' "$SSH_PRIVATE_KEY" | grep -Eq '^[A-Za-z0-9+/=\\r\\n]+$'; then
+            echo "Detected: base64-like or escaped-newline content"
+            CLEANED_KEY="$(printf '%s' "$SSH_PRIVATE_KEY" | tr -d '\r')"
+            if printf '%s' "$CLEANED_KEY" | base64 -d >/dev/null 2>&1; then
+              echo "Decoded preview: $(printf '%s' "$CLEANED_KEY" | base64 -d | head -c 40 | tr '\n' ' ')"
+              echo "Classification: valid base64 SSH key"
+            else
+              echo "Classification: base64-like but invalid; raw key text or malformed secret"
+            fi
+          else
+            echo "Detected: non-base64/raw secret or escaped content"
+            echo "Preview: $(printf '%s' "$SSH_PRIVATE_KEY" | head -c 80 | tr '\n' ' ')"
+          fi
+
       - name: ℹ Deployment Status
         run: |
           cat << 'EOF'
