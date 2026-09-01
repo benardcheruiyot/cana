@@ -553,10 +553,10 @@ export default function CheckoutPage({ cartItems, total, onPlaceOrder, onCancel,
                         />
                         <button
                           type="button"
+                          className={styles.cardRevealButton}
                           onClick={() => setShowCardNumber((current) => !current)}
                           aria-label={showCardNumber ? 'Hide card number' : 'Show card number'}
                           disabled={isFormLocked}
-                          style={{ whiteSpace: 'nowrap' }}
                         >
                           {showCardNumber ? 'Hide' : 'Show'}
                         </button>

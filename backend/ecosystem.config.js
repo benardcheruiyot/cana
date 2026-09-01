@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'greenstone-storefront',
+      name: 'natuleaf-storefront',
       script: 'index.js',
       cwd: __dirname,
       instances: 1,
@@ -9,7 +9,7 @@ module.exports = {
       watch: false,
       env: {
         NODE_ENV: 'production',
-        PORT: process.env.PORT || 4100,
+        PORT: process.env.PORT || 4101,
       },
     },
   ],

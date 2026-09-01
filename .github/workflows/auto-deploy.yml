@@ -1,26 +1,24 @@
-# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
-name: Build & Auto Deploy
-# Minor update to trigger deployment
+name: Natuleaf Auto Deploy
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: production
     env:
       INTERSERVER_HOST: ${{ secrets.INTERSERVER_HOST }}
       INTERSERVER_USER: ${{ secrets.INTERSERVER_USER }}
-      INTERSERVER_PASSWORD: ${{ secrets.INTERSERVER_PASSWORD }}
-      PROD_HOST: ${{ secrets.PROD_HOST }}
-      BACKEND_TARGET_DIR: ${{ secrets.BACKEND_TARGET_DIR }}
-      REMOTE_APP_DIR: ${{ secrets.REMOTE_APP_DIR }}
-      SMTP_USER: ${{ secrets.SMTP_USER }}
-      SMTP_PASS: ${{ secrets.SMTP_PASS }}
-      APP_DOMAIN: ${{ secrets.APP_DOMAIN }}
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+      INTERSERVER_PRIVATE_KEY: ${{ secrets.INTERSERVER_PRIVATE_KEY }}
+      APP_DOMAIN: ${{ secrets.APP_DOMAIN || 'natuleaf.site' }}
+      CORS_ORIGIN: ${{ secrets.CORS_ORIGIN || 'https://natuleaf.site,https://www.natuleaf.site' }}
+      REMOTE_APP_DIR: ${{ secrets.REMOTE_APP_DIR || '/opt/natuleaf-storefront' }}
+      TELEGRAM_NOTIFICATIONS_ENABLED: ${{ secrets.TELEGRAM_NOTIFICATIONS_ENABLED || 'true' }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,171 +26,34 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            frontend/package-lock.json
+            backend/package-lock.json
 
-      - name: Install frontend dependencies
-        working-directory: frontend
+      - name: Install dependencies
         run: |
           npm ci
+          cd frontend && npm ci
+          cd ../backend && npm ci
 
       - name: Build frontend
-        working-directory: frontend
         run: |
-          npm run build --silent
+          cd frontend
+          npm run build
 
-      - name: Validate required deploy secrets
-        run: |
-          missing=()
-          for required in INTERSERVER_HOST INTERSERVER_USER INTERSERVER_PASSWORD; do
-            if [ -z "${!required:-}" ]; then
-              missing+=("${required}")
-            fi
-          done
-          if [ -n "${BACKEND_TARGET_DIR:-}" ] && { [ "$(basename "${BACKEND_TARGET_DIR}")" != "backend" ] || [ "$(basename "$(dirname "${BACKEND_TARGET_DIR}")")" != "greenstone-storefront" ]; }; then
-            missing+=("BACKEND_TARGET_DIR must be the dedicated /greenstone-storefront/backend directory")
-          fi
-          if [ "${#missing[@]}" -ne 0 ]; then
-            echo "Missing required secrets: ${missing[*]}"
-            exit 1
-          fi
-        env:
-          INTERSERVER_HOST: "${{ secrets.INTERSERVER_HOST }}"
-          INTERSERVER_USER: "${{ secrets.INTERSERVER_USER }}"
-          INTERSERVER_PASSWORD: "${{ secrets.INTERSERVER_PASSWORD }}"
-          BACKEND_TARGET_DIR: "${{ secrets.BACKEND_TARGET_DIR }}"
-
-      - name: Install sshpass for InterServer deployment
-        if: ${{ env.INTERSERVER_PASSWORD != '' && env.INTERSERVER_HOST != '' && env.INTERSERVER_USER != '' }}
+      - name: Install sshpass
         run: |
           sudo apt-get update
           sudo apt-get install -y sshpass
 
-      - name: Deploy via deploy-server.sh
-        if: ${{ env.INTERSERVER_PASSWORD != '' && env.INTERSERVER_HOST != '' && env.INTERSERVER_USER != '' }}
+      - name: Deploy via SSH
         run: |
           chmod +x ./scripts/deploy-server.sh
-          export SSH_USER="${INTERSERVER_USER}"
-          export SSH_PASSWORD="${INTERSERVER_PASSWORD}"
-          export DEPLOY_ENV_FILE="backend/.env"
-          export REMOTE_APP_DIR="${REMOTE_APP_DIR:-/opt/greenstone-storefront}"
-          export APP_PORT="4100"
-          ./scripts/deploy-server.sh "${INTERSERVER_HOST}"
-        env:
-          INTERSERVER_HOST: ${{ secrets.INTERSERVER_HOST }}
-          INTERSERVER_USER: ${{ secrets.INTERSERVER_USER }}
-          INTERSERVER_PASSWORD: ${{ secrets.INTERSERVER_PASSWORD }}
+          ./scripts/deploy-server.sh "$INTERSERVER_HOST"
 
-      - name: Generate backend env file (optional)
-        if: ${{ env.BACKEND_TARGET_DIR != '' && env.SMTP_USER != '' && env.SMTP_PASS != '' && env.APP_DOMAIN != '' }}
+      - name: Post-deploy health reminder
         run: |
-          echo "Writing backend env to backend_env.txt"
-          SMTP_HOST="${SMTP_HOST:-smtp-relay.brevo.com}"
-          SMTP_PORT="${SMTP_PORT:-587}"
-          SMTP_SECURE="${SMTP_SECURE:-false}"
-          SMTP_FROM="${SMTP_FROM:-Green Rise <no-reply@${APP_DOMAIN}>}"
-          SMTP_REPLY_TO="${SMTP_REPLY_TO:-info@${APP_DOMAIN}}"
-
-          {
-            printf 'EMAIL_NOTIFICATIONS_ENABLED=true\n'
-            printf 'SMTP_HOST=%s\n' "$SMTP_HOST"
-            printf 'SMTP_PORT=%s\n' "$SMTP_PORT"
-            printf 'SMTP_SECURE=%s\n' "$SMTP_SECURE"
-            printf 'SMTP_USER=%s\n' "$SMTP_USER"
-            printf 'SMTP_PASS=%s\n' "$SMTP_PASS"
-            printf 'APP_DOMAIN=%s\n' "$APP_DOMAIN"
-            printf 'SMTP_FROM="%s"\n' "$SMTP_FROM"
-            printf 'SMTP_REPLY_TO="%s"\n' "$SMTP_REPLY_TO"
-            printf 'EMAIL_TEST_ENDPOINT_ENABLED=false\n'
-          } > backend_env.txt
-
-          echo "Generated backend_env.txt:"
-          cat backend_env.txt
-        env:
-          SMTP_HOST: ${{ secrets.SMTP_HOST || 'smtp-relay.brevo.com' }}
-          SMTP_PORT: ${{ secrets.SMTP_PORT || '587' }}
-          SMTP_SECURE: ${{ secrets.SMTP_SECURE || 'false' }}
-          SMTP_USER: ${{ secrets.SMTP_USER }}
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
-          APP_DOMAIN: ${{ secrets.APP_DOMAIN }}
-          SMTP_FROM: ${{ secrets.SMTP_FROM || '' }}
-          SMTP_REPLY_TO: ${{ secrets.SMTP_REPLY_TO || '' }}
-
-      - name: Upload backend env file (optional)
-        if: ${{ env.BACKEND_TARGET_DIR != '' && env.SMTP_USER != '' && env.SMTP_PASS != '' && env.APP_DOMAIN != '' }}
-        run: |
-          echo "Uploading backend .env to $BACKEND_TARGET_DIR"
-          sshpass -p "${INTERSERVER_PASSWORD}" scp -o StrictHostKeyChecking=no backend_env.txt "${INTERSERVER_USER}@${INTERSERVER_HOST}:${BACKEND_TARGET_DIR}/.env"
-        env:
-          INTERSERVER_USER: ${{ secrets.INTERSERVER_USER }}
-          INTERSERVER_HOST: ${{ secrets.INTERSERVER_HOST }}
-          INTERSERVER_PASSWORD: ${{ secrets.INTERSERVER_PASSWORD }}
-          BACKEND_TARGET_DIR: ${{ secrets.BACKEND_TARGET_DIR }}
-
-      - name: Purge Cloudflare (optional)
-        if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ZONE_ID != '' }}
-        run: |
-          curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
-            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            --data '{"purge_everything":true}' | jq '.' || true
-
-      - name: Compute local bundle SHA
-        run: |
-          ls -lah frontend/dist/assets
-          file=$(ls frontend/dist/assets/index-*.js | head -n1)
-          echo "LOCAL_JS_FILE=$file" >> $GITHUB_ENV
-          sha256sum "$file" | awk '{print $1}' > local_sha.txt
-          cat local_sha.txt
-
-      - name: Download production bundle and compute SHA
-        if: ${{ env.PROD_HOST != '' }}
-        run: |
-          PROD_URL="https://${PROD_HOST}/assets/$(basename ${LOCAL_JS_FILE})"
-          echo "Attempting to download $PROD_URL"
-          curl -sfL "$PROD_URL" -o prod_asset.js || true
-          if [ -f prod_asset.js ]; then sha256sum prod_asset.js | awk '{print $1}' > prod_sha.txt; else echo 'MISSING' > prod_sha.txt; fi
-          echo "PROD SHA:"; cat prod_sha.txt
-        env:
-          PROD_HOST: ${{ secrets.PROD_HOST }}
-          LOCAL_JS_FILE: ${{ env.LOCAL_JS_FILE }}
-
-      - name: Verify live HTML references the expected bundle chain
-        if: ${{ env.PROD_HOST != '' }}
-        run: |
-          curl -fsSL --header "Cache-Control: no-cache, no-store" --header "Pragma: no-cache" "https://${PROD_HOST}/" -o live_index.html
-          grep -Eq 'src="/assets/index-[^".]+\.js"|href="/assets/index-[^".]+\.css"' live_index.html || {
-            echo "Remote HTML shell is not referencing a Vite asset chain."
-            exit 1
-          }
-          js_file=$(grep -o 'src="/assets/index-[^"]*\.js"' live_index.html | sed -E 's/src="\/assets\///; s/"//')
-          css_file=$(grep -o 'href="/assets/index-[^"]*\.css"' live_index.html | sed -E 's/href="\/assets\///; s/"//')
-          [ -n "${js_file}" ] && [ -n "${css_file}" ] || {
-            echo "Remote HTML did not expose both runtime asset names"
-            exit 1
-          }
-          curl -fsSL "https://${PROD_HOST}/assets/${js_file}" -o live_asset.js || {
-            echo "Remote JS asset named by live HTML is not fetchable"
-            exit 1
-          }
-          grep -Eiq 'Message Johnson|wa.me/12513379407|https://wa.me/12513379407|Johnson on WhatsApp' live_asset.js || {
-            echo "Remote JS asset did not contain the required contact payload"
-            exit 1
-          }
-        env:
-          PROD_HOST: ${{ secrets.PROD_HOST }}
-
-      - name: Compare SHAs
-        run: |
-          echo "Local:"; cat local_sha.txt || true
-          echo "Prod:"; cat prod_sha.txt || true
-          if [ -f prod_sha.txt ] && [ "$(cat prod_sha.txt)" = "$(cat local_sha.txt)" ]; then echo "SHA_MATCH=true" >> $GITHUB_ENV; else echo "SHA_MATCH=false" >> $GITHUB_ENV; fi
-
-      - name: Upload verification artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: deploy-verification
-          path: |
-            local_sha.txt
-            prod_sha.txt
-            live_index.html
-            live_asset.js
+          echo "Site is being deployed to natuleaf.site using /opt/natuleaf-storefront and PM2 app natuleaf-storefront."

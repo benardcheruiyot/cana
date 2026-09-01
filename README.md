@@ -1,11 +1,11 @@
-# GreenStone Clone (React + Node)
+# Natuleaf Storefront (React + Node)
 
-This workspace contains a minimal clone of the GreenStone storefront split into two folders:
+This workspace contains the Natuleaf storefront split into two folders:
 
 - `backend` — Express API serving product data
 - `frontend` — React (Vite) single-page app
 
-Quick start:
+Quick start (local development):
 
 ```bash
 npm install
@@ -13,7 +13,7 @@ npm run dev
 ```
 
 This runs both:
-- backend on http://localhost:4100
+- backend on http://localhost:4101
 - frontend on http://localhost:5173 (opens automatically in the browser)
 
 Production build:
@@ -24,7 +24,7 @@ npm run build
 npm start
 ```
 
-The `npm start` command runs the Express backend and serves the built React app from `frontend/dist`.
+The `npm start` command runs the Express backend (port 4101) and serves the built React app from `frontend/dist`.
 
 ## Deploy Split Stack (Namecheap + InterServer)
 

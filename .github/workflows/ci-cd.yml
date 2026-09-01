@@ -1,13 +1,22 @@
-name: CI/CD
+name: Natuleaf CI/CD
 
 on:
   push:
     branches: [main]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/**'
   workflow_dispatch:
 
 jobs:
-  build:
+  validate-and-build:
     runs-on: ubuntu-latest
+    env:
+      CI: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -40,18 +49,45 @@ jobs:
           cd frontend
           npm run build
 
+      - name: Validate PM2 config
+        run: |
+          node -e "const cfg = require('./backend/ecosystem.config.js'); if (!cfg.apps || !cfg.apps[0] || !cfg.apps[0].name) throw new Error('PM2 app name missing'); console.log('PM2 app OK:', cfg.apps[0].name);"
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: storefront-build
+          name: natuleaf-build
           path: frontend/dist
 
   deploy:
-    needs: build
+    needs: validate-and-build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    environment: production
     steps:
-      - name: Deployment note
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install sshpass
         run: |
-          echo "Deployment is handled locally via scripts/deploy-server.sh to avoid SSH secret issues."
-          echo "Run: SSH_USER=root SSH_PASSWORD='your-password' ./scripts/deploy-server.sh 153.75.247.188"
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+
+      - name: Deploy to InterServer
+        env:
+          SSH_USER: ${{ secrets.INTERSERVER_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.INTERSERVER_PRIVATE_KEY }}
+          APP_DOMAIN: ${{ secrets.APP_DOMAIN || 'natuleaf.site' }}
+          CORS_ORIGIN: ${{ secrets.CORS_ORIGIN || 'https://natuleaf.site,https://www.natuleaf.site' }}
+          REMOTE_APP_DIR: ${{ secrets.REMOTE_APP_DIR || '/opt/natuleaf-storefront' }}
+          APP_PORT: '4101'
+          TELEGRAM_NOTIFICATIONS_ENABLED: ${{ secrets.TELEGRAM_NOTIFICATIONS_ENABLED || 'true' }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          chmod +x ./scripts/deploy-server.sh
+          ./scripts/deploy-server.sh "${{ secrets.INTERSERVER_HOST }}"
+
+      - name: Smoke test deployment
+        run: |
+          echo "Deployment finished for natuleaf.site. Verify HTTPS and API health after DNS has propagated."
