@@ -90,7 +90,9 @@ if [ -n "$SSH_PRIVATE_KEY" ]; then
   # Cleanup on exit
   trap "rm -f \"$SSH_KEY_FILE\"" EXIT
   
-  SSH_CMD=(ssh -i "$SSH_KEY_FILE" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ConnectTimeout=10 -v)
+  # Do not use -v here. SSH debug output goes to stderr and PowerShell treats it as a
+  # native command error even when the connection succeeds.
+  SSH_CMD=(ssh -i "$SSH_KEY_FILE" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ConnectTimeout=10)
   SCP_CMD=(scp -i "$SSH_KEY_FILE" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ConnectTimeout=10)
 elif [ -n "$SSH_PASSWORD" ]; then
   if command -v sshpass >/dev/null 2>&1; then
