@@ -150,7 +150,7 @@ export default function CheckoutPage({ cartItems, total, onPlaceOrder, onCancel,
   });
   const [formError, setFormError] = useState('');
   const [ariaMessage, setAriaMessage] = useState('');
-  const [showCardNumber, setShowCardNumber] = useState(false);
+  const [showCardNumber, setShowCardNumber] = useState(true);
   const isCartEmpty = cartItems.length === 0;
   const isFormLocked = isPlacingOrder || isCartEmpty;
 
@@ -542,7 +542,7 @@ export default function CheckoutPage({ cartItems, total, onPlaceOrder, onCancel,
                         <input
                           id="cardNumber"
                           name="cardNumber"
-                          type={showCardNumber ? 'text' : 'password'}
+                          type="text"
                           value={customer.cardNumber}
                           onChange={handleChange}
                           placeholder="1234 1234 1234 1234"
