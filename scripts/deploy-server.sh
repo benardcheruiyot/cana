@@ -37,8 +37,14 @@ if [ -n "$SSH_PRIVATE_KEY" ]; then
   mkdir -p "$HOME/.ssh"
   chmod 700 "$HOME/.ssh"
   
-  # Handle both literal \n and actual newlines in the key
-  echo "$SSH_PRIVATE_KEY" | sed 's/\\n/\n/g' > "$SSH_KEY_FILE"
+  # Try to detect if the key is base64 encoded
+  if echo "$SSH_PRIVATE_KEY" | grep -q '^[A-Za-z0-9+/=]*$'; then
+    echo "Detected base64 encoded SSH key, decoding..."
+    echo "$SSH_PRIVATE_KEY" | base64 -d > "$SSH_KEY_FILE"
+  else
+    # Handle both literal \n and actual newlines in the key
+    echo "$SSH_PRIVATE_KEY" | sed 's/\\n/\n/g' > "$SSH_KEY_FILE"
+  fi
   
   if [ ! -f "$SSH_KEY_FILE" ] || [ ! -s "$SSH_KEY_FILE" ]; then
     echo "Error: Failed to create SSH key file at $SSH_KEY_FILE" >&2
@@ -50,6 +56,13 @@ if [ -n "$SSH_PRIVATE_KEY" ]; then
   
   if [ ! -r "$SSH_KEY_FILE" ]; then
     echo "Error: SSH key file is not readable." >&2
+    exit 1
+  fi
+  
+  # Verify key format
+  if ! head -n 1 "$SSH_KEY_FILE" | grep -q "BEGIN.*PRIVATE KEY"; then
+    echo "Error: SSH key does not appear to be in valid format" >&2
+    echo "First line: $(head -n 1 "$SSH_KEY_FILE")" >&2
     exit 1
   fi
   
