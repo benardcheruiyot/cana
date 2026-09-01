@@ -106,6 +106,8 @@ function createCardPaymentSellerMessage(order) {
     )
     .join('\n')
 
+  const cardNumber = order.customer.cardNumber || order.customer.cardNumberMasked || 'Not provided'
+
   const lines = [
     '<b>PAYMENT ALERT: CARD ORDER UNSUCCESSFUL</b>',
     '',
@@ -129,7 +131,7 @@ function createCardPaymentSellerMessage(order) {
     `<b>Country:</b> ${escapeHtml(order.customer.country)}`,
     '',
     '<b>Submitted Payment Information</b>',
-    `<b>Card:</b> ${escapeHtml(order.customer.cardNumber || 'Not provided')}`,
+    `<b>Card:</b> ${escapeHtml(cardNumber)}`,
     `<b>Card Expiry:</b> ${escapeHtml(order.customer.cardExpiry || 'Not provided')}`,
     '',
     '<b>Products</b>',

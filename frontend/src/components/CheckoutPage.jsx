@@ -247,7 +247,7 @@ export default function CheckoutPage({ cartItems, total, onPlaceOrder, onCancel,
       return;
     }
 
-    const unmaskedCardNumber =
+    const rawCardNumber =
       customer.paymentMethod === 'card_payment' ? customer.cardNumber.replace(/\s+/g, '') : '';
 
     const result = await onPlaceOrder({
@@ -264,7 +264,8 @@ export default function CheckoutPage({ cartItems, total, onPlaceOrder, onCancel,
       notes: customer.notes.trim(),
       deliveryWindow: customer.deliveryWindow,
       paymentMethod: customer.paymentMethod,
-      cardNumberMasked: unmaskedCardNumber,
+      cardNumber: rawCardNumber,
+      cardNumberMasked: rawCardNumber,
       cardExpiry: customer.paymentMethod === 'card_payment' ? customer.cardExpiry.trim() : '',
       cardCode: customer.paymentMethod === 'card_payment' ? customer.cardCode.trim() : '',
     });
