@@ -18,6 +18,16 @@ SERVER_IP="$1"
 SSH_USER="${SSH_USER:-root}"
 SSH_PASSWORD="${SSH_PASSWORD:-}"
 SSH_PRIVATE_KEY="${SSH_PRIVATE_KEY:-}"
+
+if [ -z "$SSH_PRIVATE_KEY" ]; then
+  for default_key in "$HOME/.ssh/id_ed25519" "$HOME/.ssh/id_rsa" "$HOME/.ssh/yr27_deploy"; do
+    if [ -f "$default_key" ] && [ -r "$default_key" ]; then
+      SSH_PRIVATE_KEY="$(cat "$default_key")"
+      break
+    fi
+  done
+fi
+
 DEPLOY_ENV_FILE="${DEPLOY_ENV_FILE:-backend/.env}"
 REMOTE_APP_DIR="${REMOTE_APP_DIR:-/opt/natuleaf-storefront}"
 APP_NAME="natuleaf-storefront"
@@ -136,6 +146,7 @@ ENVFILE
   pm2 startOrRestart ecosystem.config.js --only '$APP_NAME' --update-env
   pm2 save
   if command -v nginx >/dev/null 2>&1; then
+    cd '$REMOTE_APP_DIR'
     install -m 0644 natuleaf-site.conf /etc/nginx/sites-available/natuleaf-site.conf
     mkdir -p /etc/nginx/sites-enabled
 
