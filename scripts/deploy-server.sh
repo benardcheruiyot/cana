@@ -80,42 +80,42 @@ if [ -n "$SSH_PRIVATE_KEY" ]; then
   # Cleanup on exit
   trap "rm -f \"$SSH_KEY_FILE\"" EXIT
   
-  SSH_CMD="ssh -i \"$SSH_KEY_FILE\" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ConnectTimeout=10 -v"
-  SCP_CMD="scp -i \"$SSH_KEY_FILE\" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ConnectTimeout=10"
+  SSH_CMD=(ssh -i "$SSH_KEY_FILE" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ConnectTimeout=10 -v)
+  SCP_CMD=(scp -i "$SSH_KEY_FILE" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ConnectTimeout=10)
 elif [ -n "$SSH_PASSWORD" ]; then
   if command -v sshpass >/dev/null 2>&1; then
-    SSHPASS_CMD="sshpass"
+    SSHPASS_CMD=(sshpass -p "$SSH_PASSWORD")
   elif [ -n "${SSHPASS_BINARY:-}" ] && [ -x "${SSHPASS_BINARY}" ]; then
-    SSHPASS_CMD="$SSHPASS_BINARY"
+    SSHPASS_CMD=("$SSHPASS_BINARY" -p "$SSH_PASSWORD")
   elif [ -x "/mnt/c/Users/bcher/AppData/Local/Temp/sshpass.exe" ]; then
-    SSHPASS_CMD="/mnt/c/Users/bcher/AppData/Local/Temp/sshpass.exe"
+    SSHPASS_CMD=(/mnt/c/Users/bcher/AppData/Local/Temp/sshpass.exe -p "$SSH_PASSWORD")
   else
     echo "sshpass not found. Set SSH_PRIVATE_KEY for key-based auth, or install sshpass for password auth." >&2
     exit 1
   fi
-  SSH_CMD="$SSHPASS_CMD -p \"$SSH_PASSWORD\" ssh -o StrictHostKeyChecking=no"
-  SCP_CMD="$SSHPASS_CMD -p \"$SSH_PASSWORD\" scp -o StrictHostKeyChecking=no"
+  SSH_CMD=("${SSHPASS_CMD[@]}" ssh -o StrictHostKeyChecking=no)
+  SCP_CMD=("${SSHPASS_CMD[@]}" scp -o StrictHostKeyChecking=no)
 else
   echo "Set SSH_PRIVATE_KEY or SSH_PASSWORD before running this script." >&2
   exit 1
 fi
 
 echo "Testing SSH connection to $SSH_USER@$SERVER_IP..."
-if ! $SSH_CMD "$SSH_USER@$SERVER_IP" "echo 'SSH connection successful.'" 2>&1 | head -n 5; then
+if ! "${SSH_CMD[@]}" "$SSH_USER@$SERVER_IP" "echo 'SSH connection successful.'" 2>&1 | head -n 5; then
   echo "Error: Cannot connect to $SSH_USER@$SERVER_IP via SSH. Check host, credentials, and network." >&2
   exit 1
 fi
 
-$SSH_CMD "$SSH_USER@$SERVER_IP" "mkdir -p '$REMOTE_APP_DIR/backend'"
+"${SSH_CMD[@]}" "$SSH_USER@$SERVER_IP" "mkdir -p '$REMOTE_APP_DIR/backend'"
 if [ -n "$DEPLOY_ENV_FILE" ] && [ -f "$DEPLOY_ENV_FILE" ]; then
   echo "Copying $DEPLOY_ENV_FILE to remote backend .env"
-  $SCP_CMD "$DEPLOY_ENV_FILE" "$SSH_USER@$SERVER_IP:$REMOTE_APP_DIR/backend/.env"
+  "${SCP_CMD[@]}" "$DEPLOY_ENV_FILE" "$SSH_USER@$SERVER_IP:$REMOTE_APP_DIR/backend/.env"
 fi
 
 echo "Deploying current local source to the remote server"
-tar --exclude='./backend/.env' --exclude='./backend/node_modules' --exclude='./frontend/node_modules' --exclude='./.git' -cf - backend frontend package.json package-lock.json scripts natuleaf-site.conf | $SSH_CMD "$SSH_USER@$SERVER_IP" "cd '$REMOTE_APP_DIR' && tar -xpf -"
+tar --exclude='./backend/.env' --exclude='./backend/node_modules' --exclude='./frontend/node_modules' --exclude='./.git' -cf - backend frontend package.json package-lock.json scripts natuleaf-site.conf | "${SSH_CMD[@]}" "$SSH_USER@$SERVER_IP" "cd '$REMOTE_APP_DIR' && tar -xpf -"
 
-$SSH_CMD "$SSH_USER@$SERVER_IP" "
+"${SSH_CMD[@]}" "$SSH_USER@$SERVER_IP" "
   set -e
   cd '$REMOTE_APP_DIR'
   npm ci
