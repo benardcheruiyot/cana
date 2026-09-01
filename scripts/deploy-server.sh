@@ -9,15 +9,21 @@ if [ ! -d .git ]; then
   exit 1
 fi
 
-if [ -z "${1:-}" ]; then
+if [ -z "${1:-${INTERSERVER_HOST:-}}" ]; then
   echo "Usage: ./scripts/deploy-server.sh <server-ip>" >&2
   exit 1
 fi
 
-SERVER_IP="$1"
+SERVER_IP="${1:-$INTERSERVER_HOST}"
 SSH_USER="${SSH_USER:-root}"
+SSH_PORT="${SSH_PORT:-22}"
 SSH_PASSWORD="${SSH_PASSWORD:-}"
 SSH_PRIVATE_KEY="${SSH_PRIVATE_KEY:-}"
+
+if ! [[ "$SSH_PORT" =~ ^[0-9]+$ ]] || [ "$SSH_PORT" -lt 1 ] || [ "$SSH_PORT" -gt 65535 ]; then
+  echo "SSH_PORT must be a valid TCP port (1-65535)." >&2
+  exit 1
+fi
 
 if [ -z "$SSH_PRIVATE_KEY" ]; then
   for default_key in "$HOME/.ssh/id_ed25519" "$HOME/.ssh/id_rsa" "$HOME/.ssh/yr27_deploy"; do
@@ -92,8 +98,8 @@ if [ -n "$SSH_PRIVATE_KEY" ]; then
   
   # Do not use -v here. SSH debug output goes to stderr and PowerShell treats it as a
   # native command error even when the connection succeeds.
-  SSH_CMD=(ssh -i "$SSH_KEY_FILE" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ConnectTimeout=10)
-  SCP_CMD=(scp -i "$SSH_KEY_FILE" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ConnectTimeout=10)
+  SSH_CMD=(ssh -i "$SSH_KEY_FILE" -p "$SSH_PORT" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=10 -o ConnectionAttempts=1)
+  SCP_CMD=(scp -i "$SSH_KEY_FILE" -P "$SSH_PORT" -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=10 -o ConnectionAttempts=1)
 elif [ -n "$SSH_PASSWORD" ]; then
   if command -v sshpass >/dev/null 2>&1; then
     SSHPASS_CMD=(sshpass -p "$SSH_PASSWORD")
@@ -105,16 +111,17 @@ elif [ -n "$SSH_PASSWORD" ]; then
     echo "sshpass not found. Set SSH_PRIVATE_KEY for key-based auth, or install sshpass for password auth." >&2
     exit 1
   fi
-  SSH_CMD=("${SSHPASS_CMD[@]}" ssh -o StrictHostKeyChecking=no)
-  SCP_CMD=("${SSHPASS_CMD[@]}" scp -o StrictHostKeyChecking=no)
+  SSH_CMD=("${SSHPASS_CMD[@]}" ssh -p "$SSH_PORT" -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o ConnectionAttempts=1)
+  SCP_CMD=("${SSHPASS_CMD[@]}" scp -P "$SSH_PORT" -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o ConnectionAttempts=1)
 else
   echo "Set SSH_PRIVATE_KEY or SSH_PASSWORD before running this script." >&2
   exit 1
 fi
 
-echo "Testing SSH connection to $SSH_USER@$SERVER_IP..."
+echo "Testing SSH connection to $SSH_USER@$SERVER_IP:$SSH_PORT..."
 if ! "${SSH_CMD[@]}" "$SSH_USER@$SERVER_IP" "echo 'SSH connection successful.'" 2>&1 | head -n 5; then
-  echo "Error: Cannot connect to $SSH_USER@$SERVER_IP via SSH. Check host, credentials, and network." >&2
+  echo "Error: Cannot connect to $SSH_USER@$SERVER_IP:$SSH_PORT via SSH." >&2
+  echo "Verify the host is reachable from this runner and that the SSH service/firewall allows this port." >&2
   exit 1
 fi
 

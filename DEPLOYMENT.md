@@ -5,7 +5,7 @@
 - ✅ **Frontend builds**: Working (Vite production builds)
 - ✅ **Backend ready**: Express.js app with PM2 management
 - ✅ **Deploy script**: `scripts/deploy-server.sh` fully functional with SSH key handling
-- ❌ **GitHub Actions auto-deploy**: Disabled - GitHub runners cannot reach InterServer port 22
+- ✅ **GitHub Actions deployment**: Uses a self-hosted runner with server network access
 
 ## Deployment Methods
 
@@ -49,16 +49,17 @@ Manually trigger or push code to run builds automatically.
 
 Use this to prepare builds that you can then deploy manually.
 
-### Option 3: Enable GitHub Actions SSH Deployment
+### Option 3: Self-hosted GitHub Actions Deployment
 
-If you want GitHub Actions to deploy automatically:
+To deploy automatically with GitHub Actions:
 
-1. Contact InterServer support
-2. Request they allow GitHub Actions runner IPs on port 22
-3. Get list of GitHub Actions runner IP ranges
-4. Update firewall rules
+1. Install a GitHub Actions self-hosted runner on a trusted machine
+2. Confirm that machine can connect to the InterServer SSH port
+3. Add the repository secrets listed above
+4. Push to `main` or manually run `self-hosted-deploy.yml`
 
-Then uncomment the deployment steps in `.github/workflows/auto-deploy.yml`
+Do not use a GitHub-hosted runner for production SSH deployment. Its network
+path to InterServer is blocked and produces connection timeouts.
 
 ## Quick Start
 
