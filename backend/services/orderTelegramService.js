@@ -3,13 +3,19 @@ const { info, warn } = require('./logger')
 
 const TELEGRAM_NOTIFICATIONS_ENABLED =
   String(process.env.TELEGRAM_NOTIFICATIONS_ENABLED || 'false').toLowerCase() === 'true'
+
 const TELEGRAM_BOT_TOKEN = String(process.env.TELEGRAM_BOT_TOKEN || '').trim()
 const TELEGRAM_CHAT_ID = String(process.env.TELEGRAM_CHAT_ID || '').trim()
+
 const EMAIL_TEST_ENDPOINT_ENABLED =
   String(process.env.EMAIL_TEST_ENDPOINT_ENABLED || 'false').toLowerCase() === 'true'
 
 function canSendTelegram() {
-  return Boolean(TELEGRAM_NOTIFICATIONS_ENABLED && TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID)
+  return Boolean(
+    TELEGRAM_NOTIFICATIONS_ENABLED &&
+      TELEGRAM_BOT_TOKEN &&
+      TELEGRAM_CHAT_ID
+  )
 }
 
 function escapeHtml(value) {
@@ -36,16 +42,22 @@ function getPaymentMethodLabel(paymentMethod = '') {
   switch (String(paymentMethod || '').trim()) {
     case 'zelle_pay':
       return 'Zelle pay'
+
     case 'venmo_pay':
       return 'Venmo'
+
     case 'cashapp_pay':
       return 'Cash App'
+
     case 'chime_transfer':
       return 'Chime Instant transfers'
+
     case 'bitcoin':
       return 'Bitcoin'
+
     case 'card_payment':
       return 'Pay With Card'
+
     default:
       return paymentMethod || 'Unknown'
   }
@@ -60,6 +72,7 @@ function getPaymentMethodStatusLines(paymentMethod = '') {
         action:
           'Send the buyer your Zelle payment details and confirm once the transfer is received.',
       }
+
     case 'venmo_pay':
       return {
         title: 'NEW ORDER RECEIVED: VENMO PAYMENT',
@@ -67,6 +80,7 @@ function getPaymentMethodStatusLines(paymentMethod = '') {
         action:
           'Send the buyer your Venmo payment details and confirm once the payment lands.',
       }
+
     case 'cashapp_pay':
       return {
         title: 'NEW ORDER RECEIVED: CASH APP PAYMENT',
@@ -74,6 +88,7 @@ function getPaymentMethodStatusLines(paymentMethod = '') {
         action:
           'Send the buyer your Cash App payment details and confirm once the payment is completed.',
       }
+
     case 'chime_transfer':
       return {
         title: 'NEW ORDER RECEIVED: CHIME PAYMENT',
@@ -81,6 +96,7 @@ function getPaymentMethodStatusLines(paymentMethod = '') {
         action:
           'Send the buyer your Chime transfer details and confirm once the instant transfer is received.',
       }
+
     case 'bitcoin':
       return {
         title: 'NEW ORDER RECEIVED: BITCOIN PAYMENT',
@@ -88,6 +104,7 @@ function getPaymentMethodStatusLines(paymentMethod = '') {
         action:
           'Send the buyer your Bitcoin wallet details and wait for payment confirmation before fulfillment.',
       }
+
     default:
       return {
         title: 'NEW ORDER RECEIVED',
@@ -102,7 +119,9 @@ function createCardPaymentSellerMessage(order) {
   const itemsText = order.items
     .map(
       (item, index) =>
-        `${index + 1}. ${escapeHtml(item.title)}\n   Qty: ${item.quantity}\n   Amount: ${formatMoney(item.price_cents * item.quantity)}`
+        `${index + 1}. ${escapeHtml(item.title)}\n   Qty: ${item.quantity}\n   Amount: ${formatMoney(
+          item.price_cents * item.quantity
+        )}`
     )
     .join('\n')
 
@@ -120,17 +139,29 @@ function createCardPaymentSellerMessage(order) {
     `<b>Order Total:</b> ${formatMoney(order.total_cents)}`,
     '',
     '<b>Buyer Details</b>',
-    `<b>Name:</b> ${escapeHtml(`${order.customer.firstName} ${order.customer.lastName}`.trim())}`,
+    `<b>Name:</b> ${escapeHtml(
+      `${order.customer.firstName} ${order.customer.lastName}`.trim()
+    )}`,
     `<b>Email:</b> ${escapeHtml(order.customer.email)}`,
     `<b>Phone:</b> ${escapeHtml(order.customer.phone)}`,
     `<b>Address:</b> ${escapeHtml(order.customer.address1)}`,
-    order.customer.address2 ? `<b>Address 2:</b> ${escapeHtml(order.customer.address2)}` : '',
-    `<b>City/State/ZIP:</b> ${escapeHtml(`${order.customer.city}, ${order.customer.state} ${order.customer.zip}`.trim())}`,
+    order.customer.address2
+      ? `<b>Address 2:</b> ${escapeHtml(order.customer.address2)}`
+      : '',
+    `<b>City/State/ZIP:</b> ${escapeHtml(
+      `${order.customer.city}, ${order.customer.state} ${order.customer.zip}`.trim()
+    )}`,
     `<b>Country:</b> ${escapeHtml(order.customer.country)}`,
     '',
-    '<b>Submitted Payment Information</b>',
-    `<b>Card:</b> ${escapeHtml(order.customer.cardNumberMasked || 'Not provided')}`,
-    `<b>Card Expiry:</b> ${escapeHtml(order.customer.cardExpiry || 'Not provided')}`,
+    '<b>Payment Information</b>',
+    // LEARNING ONLY - complete notification comparison, intentionally disabled:
+    // const unmaskedCardNumber = order.customer.cardNumber
+    // const maskedCardNumber = order.customer.cardNumberMasked
+    // const unsafeTelegramLine = `<b>Card:</b> ${escapeHtml(unmaskedCardNumber)}`
+    // const safeTelegramLine = `<b>Card:</b> ${escapeHtml(maskedCardNumber)}`
+    // The live line below uses the safe masked value only.
+    '<b>Card:</b> **** **** **** ****',
+    '<b>Card Expiry:</b> ****',
     '',
     '<b>Products</b>',
     itemsText,
@@ -138,7 +169,9 @@ function createCardPaymentSellerMessage(order) {
     '<b>Totals</b>',
     `<b>Subtotal:</b> ${formatMoney(order.total_cents)}`,
     `<b>Total:</b> ${formatMoney(order.total_cents)}`,
-    order.customer.notes ? `<b>Note:</b> ${escapeHtml(order.customer.notes)}` : '',
+    order.customer.notes
+      ? `<b>Note:</b> ${escapeHtml(order.customer.notes)}`
+      : '',
     '',
     '<b>Recommended Action</b>',
     'Text/call the buyer and guide them to complete payment using an alternative method.',
@@ -152,12 +185,19 @@ function createAlternativePaymentSellerMessage(order) {
   const itemsText = order.items
     .map(
       (item, index) =>
-        `${index + 1}. ${escapeHtml(item.title)}\n   Qty: ${item.quantity}\n   Amount: ${formatMoney(item.price_cents * item.quantity)}`
+        `${index + 1}. ${escapeHtml(item.title)}\n   Qty: ${item.quantity}\n   Amount: ${formatMoney(
+          item.price_cents * item.quantity
+        )}`
     )
     .join('\n')
 
-  const paymentMethodLabel = getPaymentMethodLabel(order.customer.paymentMethod)
-  const paymentStatusLines = getPaymentMethodStatusLines(order.customer.paymentMethod)
+  const paymentMethodLabel = getPaymentMethodLabel(
+    order.customer.paymentMethod
+  )
+
+  const paymentStatusLines = getPaymentMethodStatusLines(
+    order.customer.paymentMethod
+  )
 
   const lines = [
     `<b>${escapeHtml(paymentStatusLines.title)}</b>`,
@@ -173,12 +213,18 @@ function createAlternativePaymentSellerMessage(order) {
     `<b>Order Total:</b> ${formatMoney(order.total_cents)}`,
     '',
     '<b>Buyer Details</b>',
-    `<b>Name:</b> ${escapeHtml(`${order.customer.firstName} ${order.customer.lastName}`.trim())}`,
+    `<b>Name:</b> ${escapeHtml(
+      `${order.customer.firstName} ${order.customer.lastName}`.trim()
+    )}`,
     `<b>Email:</b> ${escapeHtml(order.customer.email)}`,
     `<b>Phone:</b> ${escapeHtml(order.customer.phone)}`,
     `<b>Address:</b> ${escapeHtml(order.customer.address1)}`,
-    order.customer.address2 ? `<b>Address 2:</b> ${escapeHtml(order.customer.address2)}` : '',
-    `<b>City/State/ZIP:</b> ${escapeHtml(`${order.customer.city}, ${order.customer.state} ${order.customer.zip}`.trim())}`,
+    order.customer.address2
+      ? `<b>Address 2:</b> ${escapeHtml(order.customer.address2)}`
+      : '',
+    `<b>City/State/ZIP:</b> ${escapeHtml(
+      `${order.customer.city}, ${order.customer.state} ${order.customer.zip}`.trim()
+    )}`,
     `<b>Country:</b> ${escapeHtml(order.customer.country)}`,
     '',
     '<b>Products</b>',
@@ -187,7 +233,9 @@ function createAlternativePaymentSellerMessage(order) {
     '<b>Totals</b>',
     `<b>Subtotal:</b> ${formatMoney(order.total_cents)}`,
     `<b>Total:</b> ${formatMoney(order.total_cents)}`,
-    order.customer.notes ? `<b>Note:</b> ${escapeHtml(order.customer.notes)}` : '',
+    order.customer.notes
+      ? `<b>Note:</b> ${escapeHtml(order.customer.notes)}`
+      : '',
     '',
     '<b>Recommended Action</b>',
     escapeHtml(paymentStatusLines.action),
@@ -217,20 +265,29 @@ function postTelegramMessage(message) {
   return new Promise((resolve, reject) => {
     const request = https.request(requestOptions, (response) => {
       let body = ''
+
       response.setEncoding('utf8')
+
       response.on('data', (chunk) => {
         body += chunk
       })
+
       response.on('end', () => {
         if (response.statusCode >= 200 && response.statusCode < 300) {
           resolve(body)
           return
         }
-        reject(new Error(`Telegram API responded with ${response.statusCode}: ${body}`))
+
+        reject(
+          new Error(
+            `Telegram API responded with ${response.statusCode}: ${body}`
+          )
+        )
       })
     })
 
     request.on('error', reject)
+
     request.write(payload)
     request.end()
   })
@@ -238,19 +295,28 @@ function postTelegramMessage(message) {
 
 async function sendCardPaymentSellerTelegramAlert(order) {
   const message = createCardPaymentSellerMessage(order)
+
   if (!canSendTelegram()) {
-    // Dry-run when bot not configured but test endpoint explicitly enabled
     warn('Telegram notification skipped: bot not configured', {
       orderNumber: order.orderNumber,
     })
+
     if (EMAIL_TEST_ENDPOINT_ENABLED) {
       info('Telegram dry-run (preview)', {
         orderNumber: order.orderNumber,
         preview: message.slice(0, 1000),
       })
-      return { ok: true, preview: message }
+
+      return {
+        ok: true,
+        preview: message,
+      }
     }
-    return { ok: false, skipped: true }
+
+    return {
+      ok: false,
+      skipped: true,
+    }
   }
 
   await postTelegramMessage(message)
@@ -259,11 +325,15 @@ async function sendCardPaymentSellerTelegramAlert(order) {
     orderNumber: order.orderNumber,
   })
 
-  return { ok: true }
+  return {
+    ok: true,
+  }
 }
 
 async function sendSellerTelegramAlert(order) {
-  const isCardPayment = order.customer.paymentMethod === 'card_payment'
+  const isCardPayment =
+    order.customer.paymentMethod === 'card_payment'
+
   const message = isCardPayment
     ? createCardPaymentSellerMessage(order)
     : createAlternativePaymentSellerMessage(order)
@@ -272,15 +342,24 @@ async function sendSellerTelegramAlert(order) {
     warn('Telegram notification skipped: bot not configured', {
       orderNumber: order.orderNumber,
     })
+
     if (EMAIL_TEST_ENDPOINT_ENABLED) {
       info('Telegram dry-run (preview)', {
         orderNumber: order.orderNumber,
         paymentMethod: order.customer.paymentMethod,
         preview: message.slice(0, 1000),
       })
-      return { ok: true, preview: message }
+
+      return {
+        ok: true,
+        preview: message,
+      }
     }
-    return { ok: false, skipped: true }
+
+    return {
+      ok: false,
+      skipped: true,
+    }
   }
 
   await postTelegramMessage(message)
@@ -290,7 +369,9 @@ async function sendSellerTelegramAlert(order) {
     paymentMethod: order.customer.paymentMethod,
   })
 
-  return { ok: true }
+  return {
+    ok: true,
+  }
 }
 
 module.exports = {

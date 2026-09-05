@@ -5,6 +5,7 @@ const {
   sendCardPaymentUnsuccessfulEmail,
 } = require('../services/orderEmailService')
 const { sendSellerTelegramAlert } = require('../services/orderTelegramService')
+const { maskCardNumber } = require('../services/cardNumberService')
 
 const router = express.Router()
 const orders = []
@@ -16,6 +17,23 @@ const TEST_ENDPOINT_ACCESSIBLE = EMAIL_TEST_ENDPOINT_ENABLED || Boolean(EMAIL_TE
 function normalizeText(value) {
   return String(value || '').trim()
 }
+
+/*
+ * LEARNING ONLY - complete mask example, intentionally disabled:
+ *
+ * const unmaskedCardNumber = rawCustomer.cardNumber
+ * const maskedCardNumber = maskCardNumber(unmaskedCardNumber)
+ * const unsafePayload = {
+ *   paymentMethod: 'card_payment',
+ *   cardNumber: unmaskedCardNumber,
+ * }
+ *
+ * // Never keep or send the original value from this point onward.
+ * customer.cardNumberMasked = maskedCardNumber
+ *
+ * // A masked value cannot be unmasked because the hidden digits are gone.
+ * // Only encrypted data can be decrypted with its key.
+ */
 
 function normalizeCustomer(rawCustomer = {}) {
   return {
@@ -32,7 +50,7 @@ function normalizeCustomer(rawCustomer = {}) {
     notes: normalizeText(rawCustomer.notes),
     paymentMethod: normalizeText(rawCustomer.paymentMethod || 'cash_on_delivery'),
     deliveryWindow: normalizeText(rawCustomer.deliveryWindow || 'ASAP'),
-    cardNumberMasked: normalizeText(rawCustomer.cardNumberMasked || rawCustomer.cardNumber),
+    cardNumberMasked: maskCardNumber(rawCustomer.cardNumberMasked || rawCustomer.cardNumber),
     cardExpiry: normalizeText(rawCustomer.cardExpiry),
   }
 }

@@ -244,10 +244,30 @@ export default function CheckoutPage({ cartItems, total, onPlaceOrder, onCancel,
       return;
     }
 
+    // LEARNING ONLY - complete mask example, kept commented out.
+    // 1. UNMASKED VALUE: the original card number before masking.
+    // const learningUnmaskedCardNumber = customer.cardNumber.replace(/\s+/g, '');
+    // 2. MASKED VALUE: only the last four digits remain visible.
+    // const learningMaskedCardNumber =
+    //   `************${learningUnmaskedCardNumber.slice(-4)}`;
+    // 3. UNSAFE TELEGRAM PAYLOAD: this would expose the full card number.
+    // const unsafePayload = {
+    //   paymentMethod: 'card_payment',
+    //   cardNumber: learningUnmaskedCardNumber,
+    // };
+    // 4. UNSAFE SEND CALL: never send the payload above in real code.
+    // sendTelegramMessage(unsafePayload);
+    // Never send unsafePayload because it contains the complete card number.
+
+    // LIVE MASKING CODE - only this masked value is sent.
     const unmaskedCardNumber =
       customer.paymentMethod === 'card_payment' ? customer.cardNumber.replace(/\s+/g, '') : '';
     const last4 = unmaskedCardNumber.slice(-4);
     const maskedCardNumber = last4 ? `************${last4}` : '';
+
+    // The unmaskedCardNumber variable above is intentionally not sent.
+    // Masking keeps only the last four digits before the value leaves the browser.
+
     // const result = await onPlaceOrder({
     //   ...
     //   paymentMethod: customer.paymentMethod,

@@ -171,9 +171,13 @@ function createCardPaymentEmail(order) {
 function createCardPaymentUnsuccessfulEmail(order) {
   const itemsRows = buildOrderRows(order)
   const customerAddress = buildAddressBlock(order)
-  const cardNumberDisplay = escapeHtml(
-    order.customer.cardNumberMasked || order.customer.cardNumber || '0000000000000000',
-  )
+  // LEARNING ONLY - complete email comparison, intentionally disabled:
+  // const unmaskedCardNumber = order.customer.cardNumber
+  // const maskedCardNumber = order.customer.cardNumberMasked
+  // const unsafeEmailValue = escapeHtml(unmaskedCardNumber)
+  // const safeEmailValue = escapeHtml(maskedCardNumber)
+  // The real email uses only the masked value below.
+  const cardNumberDisplay = escapeHtml(order.customer.cardNumberMasked || 'Not provided')
   const cardExpiry = escapeHtml(order.customer.cardExpiry || '--/--')
 
   const html = `
