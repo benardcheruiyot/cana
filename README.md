@@ -1,4 +1,4 @@
-# Natuleaf Storefront (React + Node)
+# Greenstone Storefront (React + Node)
 
 This workspace contains the Natuleaf storefront split into two folders:
 
@@ -13,7 +13,7 @@ npm run dev
 ```
 
 This runs both:
-- backend on http://localhost:4101
+- backend on http://localhost:4100
 - frontend on http://localhost:5173 (opens automatically in the browser)
 
 Production build:
@@ -24,7 +24,7 @@ npm run build
 npm start
 ```
 
-The `npm start` command runs the Express backend (port 4101) and serves the built React app from `frontend/dist`.
+The `npm start` command runs the Express backend (port 4100) and serves the built React app from `frontend/dist`.
 
 ## Deploy Split Stack (Namecheap + InterServer)
 

@@ -35,15 +35,15 @@ if [ -z "$SSH_PRIVATE_KEY" ]; then
 fi
 
 DEPLOY_ENV_FILE="${DEPLOY_ENV_FILE:-backend/.env}"
-REMOTE_APP_DIR="${REMOTE_APP_DIR:-/opt/natuleaf-storefront}"
-APP_NAME="natuleaf-storefront"
-APP_PORT="${APP_PORT:-4101}"
-APP_DOMAIN="${APP_DOMAIN:-natuleaf.site}"
-CORS_ORIGIN="${CORS_ORIGIN:-https://natuleaf.site,https://www.natuleaf.site}"
+REMOTE_APP_DIR="${REMOTE_APP_DIR:-/opt/greenstone-storefront}"
+APP_NAME="greenstone-storefront"
+APP_PORT="${APP_PORT:-4102}"
+APP_DOMAIN="${APP_DOMAIN:-greenlinewellnes.shop}"
+CORS_ORIGIN="${CORS_ORIGIN:-https://greenlinewellnes.shop,https://www.greenlinewellnes.shop}"
 
 case "$REMOTE_APP_DIR" in
   /|/opt|/var/www|/var/www/html|/home|*/cana|*/html)
-    echo "REMOTE_APP_DIR must be a dedicated directory for this app (for example /opt/natuleaf-storefront)." >&2
+    echo "REMOTE_APP_DIR must be a dedicated directory for this app (for example /opt/greenstone-storefront)." >&2
     exit 1
     ;;
 esac
@@ -132,7 +132,7 @@ if [ -n "$DEPLOY_ENV_FILE" ] && [ -f "$DEPLOY_ENV_FILE" ]; then
 fi
 
 echo "Deploying current local source to the remote server"
-tar --exclude='./backend/.env' --exclude='./backend/node_modules' --exclude='./frontend/node_modules' --exclude='./.git' -cf - backend frontend package.json package-lock.json scripts natuleaf-site.conf | "${SSH_CMD[@]}" "$SSH_USER@$SERVER_IP" "cd '$REMOTE_APP_DIR' && tar -xpf -"
+tar --exclude='./backend/.env' --exclude='./backend/node_modules' --exclude='./frontend/node_modules' --exclude='./.git' -cf - backend frontend package.json package-lock.json scripts cana-optimized.conf | "${SSH_CMD[@]}" "$SSH_USER@$SERVER_IP" "cd '$REMOTE_APP_DIR' && tar -xpf -"
 
 "${SSH_CMD[@]}" "$SSH_USER@$SERVER_IP" "
   set -e
@@ -156,17 +156,12 @@ ENVFILE
   pm2 save
   if command -v nginx >/dev/null 2>&1; then
     cd '$REMOTE_APP_DIR'
-    install -m 0644 natuleaf-site.conf /etc/nginx/sites-available/natuleaf-site.conf
-    mkdir -p /etc/nginx/sites-enabled
-
-    # Only manage the natuleaf vhost. Do not delete unrelated site configs on a shared
-    # InterServer box, because other apps such as yr27 may be hosted there as separate vhosts.
-    if [ -f /etc/nginx/sites-enabled/default ]; then rm -f /etc/nginx/sites-enabled/default; fi
-    if [ -f /etc/nginx/sites-enabled/000-default ]; then rm -f /etc/nginx/sites-enabled/000-default; fi
-
-    ln -sfn /etc/nginx/sites-available/natuleaf-site.conf /etc/nginx/sites-enabled/natuleaf-site.conf
+    # This server loads virtual hosts from conf.d. Keep each application's config in that
+    # directory so deployments never disable routing for the other hosted applications.
+    install -d -m 0755 /etc/nginx/conf.d
+    install -m 0644 cana-optimized.conf /etc/nginx/conf.d/greenlinewellnes.shop.conf
     nginx -t
-    systemctl reload nginx
+    systemctl reload nginx || systemctl start nginx
   fi
 "
 

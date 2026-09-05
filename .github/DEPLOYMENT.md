@@ -9,9 +9,9 @@ Add these GitHub repository secrets:
 
 Optional values:
 - INTERSERVER_PORT: SSH port, defaults to `22`
-- APP_DOMAIN: defaults to natuleaf.site
-- CORS_ORIGIN: defaults to https://natuleaf.site,https://www.natuleaf.site
-- REMOTE_APP_DIR: defaults to /opt/natuleaf-storefront
+- APP_DOMAIN: defaults to greenlinewellnes.shop
+- CORS_ORIGIN: defaults to https://greenlinewellnes.shop,https://www.greenlinewellnes.shop
+- REMOTE_APP_DIR: defaults to /opt/greenstone-storefront
 
 The self-hosted deployment workflow will:
 1. install dependencies
@@ -27,7 +27,7 @@ runner on a machine that can connect to the server, then run
 Generate a key pair locally with:
 
 ```bash
-ssh-keygen -t ed25519 -C "git-actions@natuleaf" -f ~/.ssh/natuleaf_interserver
+ssh-keygen -t ed25519 -C "git-actions@greenstone" -f ~/.ssh/greenstone_interserver
 ```
 
 Then add the public key to your server's ~/.ssh/authorized_keys and paste the private key contents into the GitHub secret.

@@ -10,7 +10,7 @@ npm run dev
 
 Development setup:
 - Frontend runs on `http://localhost:5173`
-- Backend API expected at `http://localhost:4101/api` (see `vite.config.js` proxy)
+- Backend API expected at `http://localhost:4100/api` (see `vite.config.js` proxy)
 
 ## Production Build
 
@@ -18,4 +18,4 @@ Development setup:
 npm run build
 ```
 
-Builds to `dist/` directory and is served by the Express backend at https://natuleaf.site
+Builds to `dist/` directory and is served by the Express backend at https://greenlinewellnes.shop

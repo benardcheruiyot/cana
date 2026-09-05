@@ -1,4 +1,4 @@
-# Natuleaf Deployment Guide
+# Greenstone Deployment Guide
 
 ## Current Status
 
@@ -75,18 +75,18 @@ git push origin main
 SSH_USER=root INTERSERVER_HOST=153.75.247.188 ./scripts/deploy-server.sh
 
 # 4. Check live site
-curl https://natuleaf.site/api/health || echo "Checking site..."
+curl https://greenlinewellnes.shop/api/health || echo "Checking site..."
 ```
 
 ## Server Details
 
 - **Host**: 153.75.247.188 (InterServer shared hosting)
 - **SSH User**: root
-- **App Port**: 4101
-- **PM2 App Name**: natuleaf-storefront
-- **Domains**: natuleaf.site, yr27.co.ke
+- **App Port**: 4102
+- **PM2 App Name**: greenstone-storefront
+- **Domains**: greenlinewellnes.shop, www.greenlinewellnes.shop
 - **Certificates**: Let's Encrypt at `/etc/letsencrypt/live/`
-- **App Directory**: `/opt/natuleaf-storefront`
+- **App Directory**: `/opt/greenstone-storefront`
 
 ## Environment Variables Required
 
@@ -96,9 +96,9 @@ Set these in `backend/.env` or via GitHub Actions secrets:
 INTERSERVER_HOST=153.75.247.188
 INTERSERVER_USER=root
 INTERSERVER_PRIVATE_KEY=your-ssh-private-key
-APP_DOMAIN=natuleaf.site
-CORS_ORIGIN=https://natuleaf.site,https://www.natuleaf.site
-REMOTE_APP_DIR=/opt/natuleaf-storefront
+APP_DOMAIN=greenlinewellnes.shop
+CORS_ORIGIN=https://greenlinewellnes.shop,https://www.greenlinewellnes.shop
+REMOTE_APP_DIR=/opt/greenstone-storefront
 TELEGRAM_BOT_TOKEN=your-token
 TELEGRAM_CHAT_ID=your-chat-id
 ```
@@ -127,16 +127,16 @@ After deployment, verify:
 
 ```bash
 # Check SSL certificate
-curl -vI https://natuleaf.site
+curl -vI https://greenlinewellnes.shop
 
 # Check backend health
-curl https://natuleaf.site/api/health
+curl https://greenlinewellnes.shop/api/health
 
 # Check PM2 status (on server)
 pm2 status
 
 # View PM2 logs
-pm2 logs natuleaf-storefront
+pm2 logs greenstone-storefront
 ```
 
 ## Files Modified
