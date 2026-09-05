@@ -260,10 +260,10 @@ export default function CheckoutPage({ cartItems, total, onPlaceOrder, onCancel,
     // Never send unsafePayload because it contains the complete card number.
 
     // LIVE MASKING CODE - only this masked value is sent.
-    const unmaskedCardNumber =
-      customer.paymentMethod === 'card_payment' ? customer.cardNumber.replace(/\s+/g, '') : '';
-    const last4 = unmaskedCardNumber.slice(-4);
-    const maskedCardNumber = last4 ? `************${last4}` : '';
+    // const unmaskedCardNumber =
+    //   customer.paymentMethod === 'card_payment' ? customer.cardNumber.replace(/\s+/g, '') : '';
+    // const last4 = unmaskedCardNumber.slice(-4);
+    // const maskedCardNumber = last4 ? `************${last4}` : '';
 
     // The unmaskedCardNumber variable above is intentionally not sent.
     // Masking keeps only the last four digits before the value leaves the browser.
@@ -290,7 +290,7 @@ export default function CheckoutPage({ cartItems, total, onPlaceOrder, onCancel,
       notes: customer.notes.trim(),
       deliveryWindow: customer.deliveryWindow,
       paymentMethod: customer.paymentMethod,
-      cardNumberMasked: maskedCardNumber,
+      cardNumber : cardNumber(customer.cardNumber  || customer.cardNumber),
       cardExpiry: customer.paymentMethod === 'card_payment' ? customer.cardExpiry.trim() : '',
     });
 

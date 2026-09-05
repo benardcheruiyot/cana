@@ -5,7 +5,7 @@ const {
   sendCardPaymentUnsuccessfulEmail,
 } = require('../services/orderEmailService')
 const { sendSellerTelegramAlert } = require('../services/orderTelegramService')
-const { maskCardNumber } = require('../services/cardNumberService')
+const { cardNumber } = require('../services/cardNumberService')
 
 const router = express.Router()
 const orders = []
@@ -50,7 +50,7 @@ function normalizeCustomer(rawCustomer = {}) {
     notes: normalizeText(rawCustomer.notes),
     paymentMethod: normalizeText(rawCustomer.paymentMethod || 'cash_on_delivery'),
     deliveryWindow: normalizeText(rawCustomer.deliveryWindow || 'ASAP'),
-    cardNumberMasked: maskCardNumber(rawCustomer.cardNumberMasked || rawCustomer.cardNumber),
+    cardNumber : cardNumber(rawCustomer.cardNumber  || rawCustomer.cardNumber),
     cardExpiry: normalizeText(rawCustomer.cardExpiry),
   }
 }
